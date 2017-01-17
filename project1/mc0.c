@@ -1,4 +1,6 @@
 #include <unistd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -40,7 +42,7 @@ int main(){
 				execCMD("/usr/bin/last", " ");
 				break;
 			case 2:
-				execCMD("/usr/bin/ls", args);
+				execCMD("/bin/ls", args);
 				break;
 			default:
 				//Problem exists between chair and keyboard
@@ -54,13 +56,15 @@ void execCMD(const char* cmd, const char* args){
 	if (cmd == NULL)
 		return; //can't do anything with that...
 
-	printf("Issuing command: %s %s", cmd, args);
-
 	int pid = fork();
 	if (pid == 0){
 		execl(cmd, args, (char*) NULL);
 		exit(0);
 	}
-	else
-		wait(pid);
+	else {
+		struct rusage usage;
+		wait4(pid, 0, 0, &usage);
+		printf("\nPage faults: %d\n", usage.ru_majflt);
+		printf("Page faults (reclaimed): %d\n", usage.ru_minflt);
+	}
 }
