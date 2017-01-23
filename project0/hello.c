@@ -1,3 +1,9 @@
+//This file isn't actually changed from the file provided in the
+//PDF. I actually just wget'd it using the URL in the PDF because
+//I didn't want to make any mistakes in transcribing it.
+//
+// -- Christopher Myers
+
 // We need to define __KERNEL__ and MODULE to be in Kernel space
 // If they are defined, undefined them and define them again:
 #undef __KERNEL__

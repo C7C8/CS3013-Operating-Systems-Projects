@@ -1,0 +1,14 @@
+#Christopher Myers, CS3013
+
+Jan 17 19:26:49 lazarus sudo[30419]:   sourec : TTY=pts/2 ; PWD=/home/sourec/project0 ; USER=root ; COMMAND=/usr/bin/insmod hello.ko
+Jan 17 19:26:49 lazarus sudo[30419]: pam_unix(sudo:session): session opened for user root by (uid=0)
+Jan 17 19:26:49 lazarus kernel: Hello World!
+Jan 17 19:26:49 lazarus sudo[30419]: pam_unix(sudo:session): session closed for user root
+Jan 17 19:26:50 lazarus kernel: 'Hello, world!' -- syscall1
+Jan 17 19:26:50 lazarus kernel: 'Hello, world!' -- syscall2
+Jan 17 19:26:50 lazarus kernel: 'Hello, world!' -- syscall3
+Jan 17 19:26:53 lazarus sudo[30463]:   sourec : TTY=pts/2 ; PWD=/home/sourec/project0 ; USER=root ; COMMAND=/usr/bin/rmmod hello.ko
+Jan 17 19:26:53 lazarus kernel: Cleaning up module.
+Jan 17 19:26:53 lazarus sudo[30463]: pam_unix(sudo:session): session opened for user root by (uid=0)
+Jan 17 19:26:53 lazarus sudo[30463]: pam_unix(sudo:session): session closed for user root
+
