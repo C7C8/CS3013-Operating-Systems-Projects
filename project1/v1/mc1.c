@@ -6,31 +6,25 @@
 #include <stdio.h>
 #include <string.h>
 
+typedef struct {
+	char** cmd;
+} scmd;
 
-void execCMD(char* args[3]);
+
+void execCMD(scmd cmd);
 
 int main(){
-	//Design: there should be a list of "command"
-	//structs that have an arguments array. This array shall be
-	//expandable and shall start initialized with the three default
-	//commands (whoami, last, ls). The program shall not make a
-	//distinction between "built in" commands and other commands -
-	//additional arguments should always be possible in all
-	//situations; there should be a parsing function dedicated to
-	//this that simply scans for spaces and separates arguments
-	//using them.
-
-	//An array of arrays of arguments
-	char** cmdlist[10] = {	{ "whoami", NULL},
-				{ "last", NULL},
-				{ "ls", "--color=tty", NULL},
-				{ NULL },
-				{ NULL },
-				{ NULL }, //ugh, at least it works
-				{ NULL },
-				{ NULL },
-				{ NULL },
-				{ NULL }};
+	//Would a char*** work? Absolutely, but this is way more fun!
+	scmd cmdlist[10] = {	{{ "whoami", NULL}},
+				{{ "last", NULL}},
+				{{ "ls", "--color=tty", NULL}},
+				{{ NULL }},
+				{{ NULL }},
+				{{ NULL }}, //ugh, at least it works
+				{{ NULL }},
+				{{ NULL }},
+				{{ NULL }},
+				{{ NULL }}};
 	int cmdcount = 3;
 
 	while (1) {
@@ -51,6 +45,7 @@ int main(){
 		//Who needs atoi anyways? Check if input is a number, verify that it's a valid command
 		//if it is, and then execute said command.
 		if (option >= 48 && option <= 57 && option - 48 < cmdcount){
+			printf("Executing command #%d!\n", option - 48);
 			execCMD(cmdlist[option - 48]);
 			continue;
 		}
@@ -71,21 +66,12 @@ int main(){
 				continue;
 			case 'e' :
 				exit(0);
-			case 'p' :
-				/* I swear, there's a reeaaaal good reason for the nop statement below. GCC
-				 * as usual whined and complained in the most unusual way, but this time it
-				 * objectd to having the declaration for cwd be right below the case statement
-				 * -- something about "a label can only be part of a statement and a decclaration
-				 *  is not a statement." I don't know what that's about, but I DO know that putting
-				 *  literally anything that isn't a declaration here makes it go away, so...
-				 *  2+2=4. It's going to get optimized out by the compiler anyways and I'm
-				 *  too lazy to figure out a better solution. Don't think too poorly of me
-				 *  for this... */
-				2 + 2 == 4;
+			case 'p' : { //Braces needed because we're declaring a new variable
 				char* cwd = getcwd(NULL, 0);
 				printf("Current working directory: %s\n", cwd);
 				free(cwd);
 				continue;
+			}
 		}
 
 		printf("Commander, that isn't a command I can execute... are you okay?\n");
@@ -93,13 +79,17 @@ int main(){
 	return 0;
 }
 
-void execCMD(char** args){
+void execCMD(scmd cmd){
+
+	//printf("Trying to execute command as follows:\n");
+	//for (int i = 0; args[i] != NULL; i++)
+	//	printf("%s\n", args[i]);
 	struct timeval ctime;
 	gettimeofday(&ctime, NULL);
 
 	int pid = fork();
 	if (pid == 0){
-		execvp(args[0], args);
+		execvp(cmd.cmd[0], cmd.cmd);
 	}
 	else {
 		struct rusage usage;
