@@ -50,15 +50,24 @@ int main(){
 
 		//Who needs atoi anyways? Check if input is a number, verify that it's a valid command
 		//if it is, and then execute said command.
-		if (option >= 48 && option <= 57 && option - 48 < cmdcount)
+		if (option >= 48 && option <= 57 && option - 48 < cmdcount){
 			execCMD(cmdlist[option - 48]);
+			continue;
+		}
 
 		switch (option) {
 			case 'a' :
 				printf("It seems you've stumbled on an unimplemented feature, Commander!\n");
 				continue;
 			case 'c' :
-				printf("It seems you've stumbled on an unimplemented feature, Commander!\n");
+				printf("What directory would you like to change to, Commander?: ");
+				long size = 1024;
+				char* newWD = (char*)malloc(size);
+				getline(&newWD, &size, stdin);
+				newWD[strlen(newWD)-1] = '\0'; //chop off the newline
+				printf("Changing directory to \"%s\"...\n", newWD);
+				chdir((const char*)newWD);
+				free(newWD);
 				continue;
 			case 'e' :
 				exit(0);
