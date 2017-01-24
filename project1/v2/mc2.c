@@ -5,6 +5,9 @@
 #include <sys/wait.h>
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h> //let's do some multithreading
+
+#define PID_MAX 32768
 
 typedef struct linkedCmd linkedCmd;
 struct linkedCmd {
@@ -12,11 +15,20 @@ struct linkedCmd {
 	linkedCmd* next;
 };
 
-void execCmd(linkedCmd* cmd);
+typedef struct process process;
+struct process {
+	char** args;
+	int pid;
+	struct timeval startTime;
+};
+
+void execCmd(linkedCmd* cmd, process** ptable);
 void addCmd(linkedCmd* root, linkedCmd* newCmd);
 linkedCmd* getCmd(linkedCmd* root, int pos);
+void* td_processMonitor(void* ptable);
 
 int main(){
+	//COMMAND LIST STUFF
 	linkedCmd* cmdList = (linkedCmd*)malloc(sizeof(linkedCmd));
 	addCmd(cmdList, (linkedCmd*)malloc(sizeof(linkedCmd)));
 	addCmd(cmdList, (linkedCmd*)malloc(sizeof(linkedCmd)));
@@ -26,8 +38,15 @@ int main(){
 	getCmd(cmdList, 0)->args[0] = strdup("whoami");
 	getCmd(cmdList, 1)->args[0] = strdup("last");
 	getCmd(cmdList, 2)->args[0] = strdup("ls"); getCmd(cmdList, 2)->args[1] = strdup("--color=tty");
-	
 	int cmdcount = 3;
+
+	//PROCESS TABLE
+	//Why this particular PID limit? Run `sysctl kernel.pid_max`, it'll tell you that the maximum
+	//number processes that the kernel allows is 32,768. You can't blame me for not supporting
+	//an unlimited amount of processes when the kernel itself doesn't allow it!
+	process* ptable[PID_MAX] = { NULL };
+
+	//Misc input things
 	unsigned long inputSize = 128;
 	char* input = (char*)malloc(inputSize);
 
@@ -57,7 +76,7 @@ int main(){
 		if (input[0] >= 48 && input[0] <= 57){ //cheat at number detection
 			int option = atoi(input);
 			if (option >= 0 && option <= cmdcount)
-				execCmd(getCmd(cmdList, option));
+				execCmd(getCmd(cmdList, option), NULL);
 			else
 				printf("Commander, I don't have that many commands...\n"); //TODO: implement verbal abusiveness
 			continue;
@@ -136,13 +155,26 @@ void addCmd(linkedCmd* root, linkedCmd* newCmd){
 	addCmd(root->next, newCmd);
 }
 
-void execCmd(linkedCmd* cmd){
+void execCmd(linkedCmd* cmd, process** ptable){
 	struct timeval ctime;
 	gettimeofday(&ctime, NULL);
 
 	int pid = fork();
-	if (pid == 0){
+	if (pid == 0)
 		execvp(cmd->args[0], (char** const)cmd->args);
+	else if (ptable != NULL){
+		//Put this background process on the ptable in the first available slot
+		process* newProcess = (process*)malloc(sizeof(process));
+		newProcess->args = (char**)cmd->args;
+		newProcess->pid = pid;
+		gettimeofday(&(newProcess->startTime), NULL);
+		for (int i = 0; i < PID_MAX; i++){
+			if (ptable[i] == NULL){
+				ptable[i] = newProcess;
+				printf("Assigning background process #%d slot %d on the process table.\n", pid, i);
+				break;
+			}
+		}
 	}
 	else {
 		struct rusage usage;
@@ -150,9 +182,42 @@ void execCmd(linkedCmd* cmd){
 
 		struct timeval ntime;
 		gettimeofday(&ntime, NULL);
-		float timeDelta = (float)(ntime.tv_usec - ctime.tv_usec) / 1000.0;
-		printf("\nElapsed time: %f ms\n", timeDelta);
+		float timeDelta = (float)(ntime.tv_usec - ctime.tv_usec) / 1000000.0 + (float)(ntime.tv_sec - ctime.tv_sec);
+		printf("\nElapsed time: %f s\n", timeDelta);
 		printf("Page faults: %d\n", (int)usage.ru_majflt);
 		printf("Page faults (reclaimed): %d\n\n", (int)usage.ru_minflt);
 	}
+}
+
+void* td_processMonitor(void* data){
+	process** ptable = (process**)data;
+
+	//Loop over everything in the ptable looking for dead children.
+	//Reap them and print their stats
+	struct rusage usage;
+	int i = PID_MAX;
+	while (1){
+		i++;
+		if (i >= PID_MAX)
+			i = 0;
+
+		/* ♫ Don't fear the reaper... ♫ */
+		if (ptable[i] != NULL && wait4(ptable[i]->pid, 0, WNOHANG, &usage) != 0){
+			struct timeval currentTime;
+			gettimeofday(&currentTime, NULL);
+			float timeDelta = (float)(currentTime.tv_usec - ptable[i]->startTime.tv_usec) / 1000000.0 + (float)(currentTime.tv_sec - ptable[i]->startTime.tv_sec);
+			
+			printf("----Process \"");
+			for (int i = 0; ptable[i]->args[i] != NULL && i < 10; i++)
+				printf("%s ", ptable[i]->args[i]);
+			printf("\" has completed ----");
+
+			printf("\nElapsed time: %f s\n", timeDelta);
+			printf("Page faults: %d\n", (int)usage.ru_majflt);
+			printf("Page faults (reclaimed): %d\n\n", (int)usage.ru_minflt);
+			free(ptable[i]);
+			ptable[i] = NULL;
+		}
+	}
+
 }

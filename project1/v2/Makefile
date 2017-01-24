@@ -1,4 +1,4 @@
-CFLAGS := -O3 -g -Wall -Wextra
+CFLAGS := -O3 -g -Wall -Wextra -pthread
 
 all: mc2
 
