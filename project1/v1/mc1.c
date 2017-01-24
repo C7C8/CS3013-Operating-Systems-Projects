@@ -49,9 +49,10 @@ int main(){
 		printf("\tp. pwd : Prints working directory\n");
 		printf("Option?: ");
 		if (getline(&input, &inputSize, stdin) == -1){
-			printf("Hang on a minute, that's not a valid input at all! Commander, what did you DO?!\n");
-			continue;
+			//Break at end-of-file by cheating
+			input[0] = 'e';
 		}
+		printf("\n");
 
 		if (input[0] >= 48 && input[0] <= 57){ //cheat at number detection
 			int option = atoi(input);
