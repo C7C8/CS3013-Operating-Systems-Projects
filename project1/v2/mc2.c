@@ -70,9 +70,10 @@ int main(){
 		printf("\tc. change directory : Changes process working directory\n");
 		printf("\te. exit : Leave Mid-Day Commander\n");
 		printf("\tp. pwd : Prints working directory\n");
+		printf("\tr. running processes : Print a list of running processes\n");
 		printf("Option?: ");
 		if (getline(&input, &inputSize, stdin) == -1){
-			//Break at end-of-file by cheating
+			//Exit at end-of-file by cheating
 			input[0] = 'e';
 		}
 		printf("\n");
@@ -126,6 +127,7 @@ int main(){
 			case 'e' :
 				printf("Goodbye, Commander...\n");
 				printf("--crmyers 2017\n");
+				pthread_cancel(reaperThread);
 				exit(0);
 				//Where'd all the memory for cmdList go? Well, it's only a memory leak if you
 				//lose access to it while the program runs... right?
@@ -134,6 +136,15 @@ int main(){
 				char* cwd = getcwd(NULL, 0);
 				printf("Current working directory: %s\n", cwd);
 				free(cwd);
+				continue;
+			case 'r' :
+				printf("-- Background Processes --\n");
+				for (int i = 0; ptable[i] != NULL; i++){
+					printf("[%d]. %d: ", i, ptable[i]->pid);
+					for (int j = 0; ptable[i]->args[j] != NULL; j++)
+						printf("%s ", ptable[i]->args[j]);
+					printf("\n");
+				}
 				continue;
 			}
 		}
