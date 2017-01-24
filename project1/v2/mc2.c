@@ -26,6 +26,9 @@ struct process {
 void execCmd(linkedCmd* cmd, process** ptable);
 void addCmd(linkedCmd* root, linkedCmd* newCmd);
 linkedCmd* getCmd(linkedCmd* root, int pos);
+void printStats(struct rusage usage, struct timeval startTime);
+
+//Process monitor thread - prefixed with td_
 void* td_processMonitor(void* ptable);
 
 int main(){
@@ -72,15 +75,13 @@ int main(){
 		printf("\tp. pwd : Prints working directory\n");
 		printf("\tr. running processes : Print a list of running processes\n");
 		printf("Option?: ");
-		if (getline(&input, &inputSize, stdin) == -1){
-			//Exit at end-of-file by cheating
-			input[0] = 'e';
-		}
+		if (getline(&input, &inputSize, stdin) == -1)
+			input[0] = 'e'; //Exit at end-of-file by cheating
 		printf("\n");
 
 		if (input[0] >= 48 && input[0] <= 57){ //cheat at number detection
 			int option = atoi(input);
-			if (option >= 0 && option <= cmdcount)
+			if (option >= 0 && option < cmdcount)
 				execCmd(getCmd(cmdList, option), ptable);
 			else
 				printf("Commander, I don't have that many commands...\n"); //TODO: implement verbal abusiveness
@@ -93,22 +94,25 @@ int main(){
 				linkedCmd* newCmd = (linkedCmd*)malloc(sizeof(newCmd));
 				unsigned long size = 1024;
 				char* str = (char*)malloc(size);
-				getline(&str, &size, stdin);
+				if (getline(&str, &size, stdin) == -1){
+					fprintf(stderr, "Recieved EOF at unexpected time\n");
+					exit(1);
+				}
+
 				str[strlen(str)-1] = '\0'; //chop off the newline
 				newCmd->args[0] = strtok(str, " ");
 				newCmd->concurrent = 0;
 
 				for (int i = 1; i < 10; i++){
 					newCmd->args[i] = strtok(NULL, " ");
+					if (newCmd->args[i] == NULL)
+						break;
 					if (newCmd->args[i][0] == '&'){
-						printf("Adding a concurrent command!\n");
 						newCmd->concurrent = 1;
 						newCmd->args[i] = NULL; //leaky?
 						break;
 					}
-					if (newCmd->args[i] == NULL)
-						break;
-				}
+									}
 
 				addCmd(cmdList, newCmd);
 				cmdcount++;
@@ -118,9 +122,14 @@ int main(){
 				printf("What directory would you like to change to, Commander?: ");
 				unsigned long size = 1024;
 				char* newWD = (char*)malloc(size);
-				getline(&newWD, &size, stdin);
+				if (getline(&newWD, &size, stdin) == -1){
+					fprintf(stderr, "Recieved EOF at unexpected time\n");
+					exit(1);
+				}
+
 				newWD[strlen(newWD)-1] = '\0'; //chop off the newline
-				chdir((const char*)newWD);
+				if (chdir((const char*)newWD) != 0)
+					printf("I encountered an error when trying to switch to that directory, Commander, but I don't care enough to tell you what it was!\n");
 				free(newWD);
 				continue;
 			}
@@ -137,6 +146,7 @@ int main(){
 				printf("Current working directory: %s\n", cwd);
 				free(cwd);
 				continue;
+			}
 			case 'r' :
 				printf("-- Background Processes --\n");
 				for (int i = 0; ptable[i] != NULL; i++){
@@ -146,7 +156,6 @@ int main(){
 					printf("\n");
 				}
 				continue;
-			}
 		}
 
 		printf("Commander, that isn't a command I can execute... are you okay?\n");
@@ -178,8 +187,8 @@ void addCmd(linkedCmd* root, linkedCmd* newCmd){
 }
 
 void execCmd(linkedCmd* cmd, process** ptable){
-	struct timeval ctime;
-	gettimeofday(&ctime, NULL);
+	struct timeval startTime;
+	gettimeofday(&startTime, NULL);
 
 	int pid = fork();
 	if (pid == 0)
@@ -202,19 +211,22 @@ void execCmd(linkedCmd* cmd, process** ptable){
 		//Run this command immediately and wait until it's complete
 		struct rusage usage;
 		wait4(pid, 0, 0, &usage);
-
-		struct timeval ntime;
-		gettimeofday(&ntime, NULL);
-		float timeDelta = (float)(ntime.tv_usec - ctime.tv_usec) / 1000000.0 + (float)(ntime.tv_sec - ctime.tv_sec);
-		printf("\nElapsed time: %f s\n", timeDelta);
-		printf("Page faults: %d\n", (int)usage.ru_majflt);
-		printf("Page faults (reclaimed): %d\n\n", (int)usage.ru_minflt);
+		printStats(usage, startTime);
 	}
+}
+
+void printStats(struct rusage usage, struct timeval startTime){
+	printf("\n-- Statistics --\n");
+	struct timeval currentTime;
+	gettimeofday(&currentTime, NULL);
+	float timeDelta = (float)(currentTime.tv_usec - startTime.tv_usec) / 1000000.0 + (float)(currentTime.tv_sec - startTime.tv_sec);
+	printf("Elapsed time: %f s\n", timeDelta);
+	printf("Page faults: %d\n", (int)usage.ru_majflt);
+	printf("Page faults (reclaimed): %d\n\n", (int)usage.ru_minflt);
 }
 
 void* td_processMonitor(void* data){
 	process** ptable = (process**)data;
-	printf("Entering td_processMonitor! Prepare for a wild ride!\n");
 
 	//Loop over everything in the ptable looking for dead children.
 	//Reap them and print their stats
@@ -229,16 +241,13 @@ void* td_processMonitor(void* data){
 		if (ptable[i] != NULL && wait4(ptable[i]->pid, 0, WNOHANG, &usage) != 0){
 			struct timeval currentTime;
 			gettimeofday(&currentTime, NULL);
-			float timeDelta = (float)(currentTime.tv_usec - ptable[i]->startTime.tv_usec) / 1000000.0 + (float)(currentTime.tv_sec - ptable[i]->startTime.tv_sec);
 			
 			printf("----Process \"");
 			for (int j = 0; ptable[i]->args[j] != NULL && j < 10; j++)
 				printf("%s ", ptable[i]->args[j]);
 			printf("\" has completed ----");
+			printStats(usage, ptable[i]->startTime);
 
-			printf("\nElapsed time: %f s\n", timeDelta);
-			printf("Page faults: %d\n", (int)usage.ru_majflt);
-			printf("Page faults (reclaimed): %d\n\n", (int)usage.ru_minflt);
 			free(ptable[i]);
 			ptable[i] = NULL;
 		}
