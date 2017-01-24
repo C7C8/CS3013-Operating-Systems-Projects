@@ -28,6 +28,8 @@ int main(){
 	getCmd(cmdList, 2)->args[0] = strdup("ls"); getCmd(cmdList, 2)->args[1] = strdup("--color=tty");
 	
 	int cmdcount = 3;
+	unsigned long inputSize = 128;
+	char* input = (char*)malloc(inputSize);
 
 	while (1) {
 		printf("\n===== Mid-Day Commander, v0 =====\n"); //otherwise known as fake-bash...
@@ -46,18 +48,21 @@ int main(){
 		printf("\te. exit : Leave Mid-Day Commander\n");
 		printf("\tp. pwd : Prints working directory\n");
 		printf("Option?: ");
-		char option = getchar(); //TODO: Change input method to allow for better number input
-		getchar(); //Skip the newline. This is hacky, but it works. Just don't do CTRL-D.
-		printf("\n");
-
-		//Who needs atoi anyways? Check if input is a number, verify that it's a valid command
-		//if it is, and then execute said command.
-		if (option >= 48 && option <= 57 && option - 48 < cmdcount){
-			execCmd(getCmd(cmdList, option - 48));
+		if (getline(&input, &inputSize, stdin) == -1){
+			printf("Hang on a minute, that's not a valid input at all! Commander, what did you DO?!\n");
 			continue;
 		}
 
-		switch (option) {
+		if (input[0] >= 48 && input[0] <= 57){ //cheat at number detection
+			int option = atoi(input);
+			if (option >= 0 && option <= cmdcount)
+				execCmd(getCmd(cmdList, option));
+			else
+				printf("Commander, I don't have that many commands...\n"); //TODO: implement verbal abusiveness
+			continue;
+		}
+
+		switch (input[0]) {
 			case 'a' : {
 				printf("What command would you like to add, Commander?: ");
 				linkedCmd* newCmd = (linkedCmd*)malloc(sizeof(newCmd));
@@ -66,6 +71,7 @@ int main(){
 				getline(&str, &size, stdin);
 				str[strlen(str)-1] = '\0'; //chop off the newline
 				newCmd->args[0] = strtok(str, " ");
+
 				for (int i = 1; i < 10; i++){
 					newCmd->args[i] = strtok(NULL, " ");
 					if (newCmd->args[i] == NULL)
@@ -92,6 +98,7 @@ int main(){
 				exit(0);
 				//Where'd all the memory for cmdList go? Well, it's only a memory leak if you
 				//lose access to it while the program runs... right?
+
 			case 'p' : { //Braces needed because we're declaring a new variable on the first line
 				char* cwd = getcwd(NULL, 0);
 				printf("Current working directory: %s\n", cwd);
@@ -101,7 +108,7 @@ int main(){
 		}
 
 		printf("Commander, that isn't a command I can execute... are you okay?\n");
-		fflush(stdin);
+		fflush(stdin); //wait, what?
 	}
 	return 0;
 }
