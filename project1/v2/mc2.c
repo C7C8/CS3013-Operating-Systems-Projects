@@ -13,6 +13,7 @@ typedef struct linkedCmd linkedCmd;
 struct linkedCmd {
 	char* args[10];
 	linkedCmd* next;
+	int concurrent;
 };
 
 typedef struct process process;
@@ -46,9 +47,12 @@ int main(){
 	//an unlimited amount of processes when the kernel itself doesn't allow it!
 	process* ptable[PID_MAX] = { NULL };
 
-	//Misc input things
+	//Misc things
 	unsigned long inputSize = 128;
 	char* input = (char*)malloc(inputSize);
+	pthread_t reaperThread;
+	pthread_create(&reaperThread, NULL, td_processMonitor, ptable);
+
 
 	while (1) {
 		printf("\n===== Mid-Day Commander, v0 =====\n"); //otherwise known as fake-bash...
@@ -59,7 +63,7 @@ int main(){
 			printf("\t%d. ", i);
 			for (int j = 0; args[j] != NULL; j++)
 				printf("%s ", args[j]);
-			printf("\n");
+			printf("%s\n", getCmd(cmdList, i)->concurrent ? "&" : " ");
 		}
 
 		printf("\ta. add command : Adds a new commmand to the menu.\n");
@@ -76,7 +80,7 @@ int main(){
 		if (input[0] >= 48 && input[0] <= 57){ //cheat at number detection
 			int option = atoi(input);
 			if (option >= 0 && option <= cmdcount)
-				execCmd(getCmd(cmdList, option), NULL);
+				execCmd(getCmd(cmdList, option), ptable);
 			else
 				printf("Commander, I don't have that many commands...\n"); //TODO: implement verbal abusiveness
 			continue;
@@ -91,9 +95,16 @@ int main(){
 				getline(&str, &size, stdin);
 				str[strlen(str)-1] = '\0'; //chop off the newline
 				newCmd->args[0] = strtok(str, " ");
+				newCmd->concurrent = 0;
 
 				for (int i = 1; i < 10; i++){
 					newCmd->args[i] = strtok(NULL, " ");
+					if (newCmd->args[i][0] == '&'){
+						printf("Adding a concurrent command!\n");
+						newCmd->concurrent = 1;
+						newCmd->args[i] = NULL; //leaky?
+						break;
+					}
 					if (newCmd->args[i] == NULL)
 						break;
 				}
@@ -162,7 +173,7 @@ void execCmd(linkedCmd* cmd, process** ptable){
 	int pid = fork();
 	if (pid == 0)
 		execvp(cmd->args[0], (char** const)cmd->args);
-	else if (ptable != NULL){
+	else if (cmd->concurrent){
 		//Put this background process on the ptable in the first available slot
 		process* newProcess = (process*)malloc(sizeof(process));
 		newProcess->args = (char**)cmd->args;
@@ -177,6 +188,7 @@ void execCmd(linkedCmd* cmd, process** ptable){
 		}
 	}
 	else {
+		//Run this command immediately and wait until it's complete
 		struct rusage usage;
 		wait4(pid, 0, 0, &usage);
 
@@ -191,6 +203,7 @@ void execCmd(linkedCmd* cmd, process** ptable){
 
 void* td_processMonitor(void* data){
 	process** ptable = (process**)data;
+	printf("Entering td_processMonitor! Prepare for a wild ride!\n");
 
 	//Loop over everything in the ptable looking for dead children.
 	//Reap them and print their stats
@@ -208,8 +221,8 @@ void* td_processMonitor(void* data){
 			float timeDelta = (float)(currentTime.tv_usec - ptable[i]->startTime.tv_usec) / 1000000.0 + (float)(currentTime.tv_sec - ptable[i]->startTime.tv_sec);
 			
 			printf("----Process \"");
-			for (int i = 0; ptable[i]->args[i] != NULL && i < 10; i++)
-				printf("%s ", ptable[i]->args[i]);
+			for (int j = 0; ptable[i]->args[j] != NULL && j < 10; j++)
+				printf("%s ", ptable[i]->args[j]);
 			printf("\" has completed ----");
 
 			printf("\nElapsed time: %f s\n", timeDelta);
