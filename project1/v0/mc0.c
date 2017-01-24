@@ -65,8 +65,8 @@ void execCMD(char* args[3]){
 
 		struct timeval ntime;
 		gettimeofday(&ntime, NULL);
-		float timeDelta = (float)(ntime.tv_usec - ctime.tv_usec) / 1000.0;
-		printf("Elapsed time: %f ms\n", timeDelta);
+		float timeDelta = (float)(ntime.tv_usec - ctime.tv_usec) / 1000000.0 + (float)(ntime.tv_sec - ctime.tv_usec);
+		printf("Elapsed time: %f s\n", timeDelta);
 		printf("\nPage faults: %d\n", (int)usage.ru_majflt);
 		printf("Page faults (reclaimed): %d\n", (int)usage.ru_minflt);
 	}

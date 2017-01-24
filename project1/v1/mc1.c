@@ -150,8 +150,8 @@ void execCmd(linkedCmd* cmd){
 
 		struct timeval ntime;
 		gettimeofday(&ntime, NULL);
-		float timeDelta = (float)(ntime.tv_usec - ctime.tv_usec) / 1000.0;
-		printf("\nElapsed time: %f ms\n", timeDelta);
+		float timeDelta = (float)(ntime.tv_usec - ctime.tv_usec) / 1000000.0 + (float)(ntime.tv_sec - ctime.tv_sec);
+		printf("\nElapsed time: %f s\n", timeDelta);
 		printf("Page faults: %d\n", (int)usage.ru_majflt);
 		printf("Page faults (reclaimed): %d\n\n", (int)usage.ru_minflt);
 	}
