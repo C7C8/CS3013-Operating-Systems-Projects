@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -16,9 +17,13 @@ int main(){
 		printf("\t1. last\t: Prints out the result of the last command\n");
 		printf("\t2. ls\t: Prints out the result of a listing on a user-specified path\n");
 		printf("Option?: ");
-		int option = getchar() - 48; //magic number to convert ASCII number to actual number
-		getchar(); //Skip the newline. This is hacky, but it works. Just don't do CTRL-D.
-		printf("\n");
+		char* str = (char*)malloc(8);
+		unsigned long size = 8;
+		if (getline(&str, &size, stdin) == -1){
+			printf("Reached end of file; goodbye, Commander...\n");
+			exit(0);
+		}
+		int option = atoi(str);
 
 		char* args[4] = {"", NULL, NULL, NULL};
 		if (option == 2){ //Special processing for ls

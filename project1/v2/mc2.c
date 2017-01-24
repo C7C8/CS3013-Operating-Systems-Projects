@@ -59,7 +59,7 @@ int main(){
 
 
 	while (1) {
-		printf("\n===== Mid-Day Commander, v0 =====\n"); //otherwise known as fake-bash...
+		printf("\n===== Mid-Day Commander, v2 =====\n"); //otherwise known as fake-bash...
 		printf("G'day, Commander! What command would you like to run?\n");
 		
 		for (int i = 0; i < cmdcount; i++){
