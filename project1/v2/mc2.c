@@ -219,16 +219,14 @@ void execCmd(linkedCmd* cmd, process** ptable){
 			if (ptable[i] == NULL){
 				ptable[i] = newProcess;
 				printf("Assigning background process #%d slot %d on the process table.\n", pid, i);
-				break;
+				return;
 			}
 		}
+		printf("Sorry, Commander, but somehow you have too many processes open in the background. This process will be run in the foreground instead.\n");
 	}
-	else {
-		//Run this command immediately and wait until it's complete
 		struct rusage usage;
 		wait4(pid, 0, 0, &usage);
 		printStats(usage, startTime);
-	}
 }
 
 void* td_processMonitor(void* data){

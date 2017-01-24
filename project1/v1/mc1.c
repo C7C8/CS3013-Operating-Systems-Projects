@@ -8,7 +8,7 @@
 
 typedef struct linkedCmd linkedCmd;
 struct linkedCmd {
-	char* args[10];
+	char* args[32];
 	linkedCmd* next;
 };
 
@@ -73,7 +73,7 @@ int main(){
 				str[strlen(str)-1] = '\0'; //chop off the newline
 				newCmd->args[0] = strtok(str, " ");
 
-				for (int i = 1; i < 10; i++){
+				for (int i = 1; i < 32; i++){
 					newCmd->args[i] = strtok(NULL, " ");
 					if (newCmd->args[i] == NULL)
 						break;
