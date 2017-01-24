@@ -90,6 +90,7 @@ int main(){
 
 		switch (input[0]) {
 			case 'a' : {
+				printf("-- Add a command --\n");
 				printf("What command would you like to add, Commander?: ");
 				linkedCmd* newCmd = (linkedCmd*)malloc(sizeof(newCmd));
 				unsigned long size = 1024;
@@ -119,6 +120,7 @@ int main(){
 				continue;
 			}
 			case 'c' : {
+				printf("-- Change Directory --\n");
 				printf("What directory would you like to change to, Commander?: ");
 				unsigned long size = 1024;
 				char* newWD = (char*)malloc(size);
@@ -143,7 +145,8 @@ int main(){
 
 			case 'p' : { //Braces needed because we're declaring a new variable on the first line
 				char* cwd = getcwd(NULL, 0);
-				printf("Current working directory: %s\n", cwd);
+				printf("-- Current Directory --\n");
+				printf("Directory: %s\n", cwd);
 				free(cwd);
 				continue;
 			}
@@ -215,16 +218,6 @@ void execCmd(linkedCmd* cmd, process** ptable){
 	}
 }
 
-void printStats(struct rusage usage, struct timeval startTime){
-	printf("\n-- Statistics --\n");
-	struct timeval currentTime;
-	gettimeofday(&currentTime, NULL);
-	float timeDelta = (float)(currentTime.tv_usec - startTime.tv_usec) / 1000000.0 + (float)(currentTime.tv_sec - startTime.tv_sec);
-	printf("Elapsed time: %f s\n", timeDelta);
-	printf("Page faults: %d\n", (int)usage.ru_majflt);
-	printf("Page faults (reclaimed): %d\n\n", (int)usage.ru_minflt);
-}
-
 void* td_processMonitor(void* data){
 	process** ptable = (process**)data;
 
@@ -253,4 +246,14 @@ void* td_processMonitor(void* data){
 		}
 	}
 
+}
+
+void printStats(struct rusage usage, struct timeval startTime){
+	printf("\n-- Statistics --\n");
+	struct timeval currentTime;
+	gettimeofday(&currentTime, NULL);
+	float timeDelta = (float)(currentTime.tv_usec - startTime.tv_usec) / 1000000.0 + (float)(currentTime.tv_sec - startTime.tv_sec);
+	printf("Elapsed time: %f s\n", timeDelta);
+	printf("Page faults: %d\n", (int)usage.ru_majflt);
+	printf("Page faults (reclaimed): %d\n\n", (int)usage.ru_minflt);
 }
