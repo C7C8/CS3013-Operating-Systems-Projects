@@ -1,10 +1,10 @@
 CFLAGS := -O3 -g -Wall -Wextra
 
-all: mc0
+all: mc2
 
 clean:
-	rm -f mc0
+	rm -f mc2
 
-mc0: mc0.c
+mc1: mc2.c
 
 
