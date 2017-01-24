@@ -8,10 +8,11 @@
 #include <pthread.h> //let's do some multithreading
 
 #define PID_MAX 32768
+#define ARG_MAX	32
 
 typedef struct linkedCmd linkedCmd;
 struct linkedCmd {
-	char* args[10];
+	char* args[ARG_MAX];
 	linkedCmd* next;
 	int concurrent;
 };
@@ -104,7 +105,7 @@ int main(){
 				newCmd->args[0] = strtok(str, " ");
 				newCmd->concurrent = 0;
 
-				for (int i = 1; i < 10; i++){
+				for (int i = 1; i < ARG_MAX; i++){
 					newCmd->args[i] = strtok(NULL, " ");
 					if (newCmd->args[i] == NULL)
 						break;
@@ -135,14 +136,26 @@ int main(){
 				free(newWD);
 				continue;
 			}
-			case 'e' :
+			case 'e' : {
+				//Check for children still alive
+				int canQuit = 1;
+				for (int i = 0; i < PID_MAX; i++){
+					if (ptable[i] != NULL){
+						printf("I'm sorry Dave... err, Commander, I'm afraid I can't do that. There are still processes in my process table that need to die.\n");
+						canQuit = 0;
+						break;
+					}
+				}
+
+				if (!canQuit)
+					continue;
 				printf("Goodbye, Commander...\n");
 				printf("--crmyers 2017\n");
 				pthread_cancel(reaperThread);
 				exit(0);
 				//Where'd all the memory for cmdList go? Well, it's only a memory leak if you
 				//lose access to it while the program runs... right?
-
+			}
 			case 'p' : { //Braces needed because we're declaring a new variable on the first line
 				char* cwd = getcwd(NULL, 0);
 				printf("-- Current Directory --\n");
@@ -236,7 +249,7 @@ void* td_processMonitor(void* data){
 			gettimeofday(&currentTime, NULL);
 			
 			printf("----Process \"");
-			for (int j = 0; ptable[i]->args[j] != NULL && j < 10; j++)
+			for (int j = 0; ptable[i]->args[j] != NULL && j < ARG_MAX; j++)
 				printf("%s ", ptable[i]->args[j]);
 			printf("\" has completed ----");
 			printStats(usage, ptable[i]->startTime);
@@ -249,6 +262,7 @@ void* td_processMonitor(void* data){
 }
 
 void printStats(struct rusage usage, struct timeval startTime){
+	//No need to subtract rusage stats, wait4 doesn't seem to return cumulative stats...
 	printf("\n-- Statistics --\n");
 	struct timeval currentTime;
 	gettimeofday(&currentTime, NULL);
