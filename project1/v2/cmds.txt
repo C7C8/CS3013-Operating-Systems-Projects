@@ -1,9 +1,13 @@
-0
-1
-2
 a
-ls -alh
-c
-/home
-p
+sleep 5 &
+a
+sleep 10 &
+a
+sleep 3 &
+a
+sleep 15
 3
+4
+5
+r
+6

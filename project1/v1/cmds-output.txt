@@ -1,0 +1,189 @@
+===== Mid-Day Commander, v1 =====
+G'day, Commander! What command would you like to run?
+	0. whoami 
+	1. last 
+	2. ls --color=tty 
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+Option?: 
+sourec
+
+Elapsed time: 0.002130 s
+Page faults: 0
+Page faults (reclaimed): 100
+
+
+===== Mid-Day Commander, v1 =====
+G'day, Commander! What command would you like to run?
+	0. whoami 
+	1. last 
+	2. ls --color=tty 
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+Option?: 
+sourec   pts/10       Sathanas         Tue Jan 24 16:05   still logged in
+sourec   pts/17       130.215.222.193  Tue Jan 24 13:19 - 14:05  (00:46)
+sourec   pts/10       130.215.222.193  Tue Jan 24 13:19 - 15:41  (02:22)
+sourec   pts/10       130.215.222.193  Tue Jan 24 12:55 - 12:56  (00:00)
+sourec   pts/10       130.215.222.193  Tue Jan 24 12:28 - 12:28  (00:00)
+sourec   pts/10       130.215.222.193  Tue Jan 24 12:27 - 12:28  (00:01)
+sourec   pts/10       130.215.222.193  Tue Jan 24 12:25 - 12:26  (00:00)
+sourec   pts/6        Sathanas         Tue Jan 24 08:03   still logged in
+sourec   tty7         :0               Tue Jan 24 08:02    gone - no logout
+reboot   system boot  4.8.0-34-generic Tue Jan 24 08:00   still running
+sourec   pts/9        Sathanas         Mon Jan 23 17:18 - down   (04:37)
+sourec   pts/9        Sathanas         Mon Jan 23 17:09 - 17:18  (00:09)
+sourec   pts/6        Sathanas         Mon Jan 23 16:54 - down   (05:02)
+sourec   tty7         :0               Mon Jan 23 16:00 - down   (05:56)
+sourec   pts/6        Sathanas         Mon Jan 23 11:55 - 16:54  (04:59)
+sourec   pts/17       Sathanas         Mon Jan 23 08:01 - down   (13:55)
+sourec   tty7         :0               Mon Jan 23 08:01 - 13:46  (05:44)
+reboot   system boot  4.8.0-34-generic Mon Jan 23 08:00 - 21:56  (13:55)
+sourec   pts/10       Sathanas         Sun Jan 22 19:17 - crash  (12:43)
+sourec   pts/6        Sathanas         Sun Jan 22 19:14 - crash  (12:46)
+sourec   pts/10       Sathanas         Sun Jan 22 18:29 - 19:17  (00:47)
+sourec   pts/6        Sathanas         Sun Jan 22 18:28 - 19:14  (00:46)
+sourec   pts/6        Sathanas         Sun Jan 22 18:28 - 18:28  (00:00)
+sourec   pts/6        Sathanas         Sun Jan 22 16:22 - 18:28  (02:05)
+sourec   tty7         :0               Sun Jan 22 13:26 - crash  (18:34)
+reboot   system boot  4.8.0-34-generic Sun Jan 22 10:54 - 21:56 (1+11:02)
+sourec   tty7         :0               Sun Jan 22 13:24 - crash  (-2:-29)
+reboot   system boot  4.8.0-34-generic Sun Jan 22 13:23 - 21:56 (1+08:32)
+sourec   tty7         :0               Sun Jan 22 13:15 - crash  (00:08)
+reboot   system boot  4.8.0-34-generic Sun Jan 22 13:13 - 21:56 (1+08:42)
+sourec   tty7         :0               Sun Jan 22 13:07 - crash  (00:06)
+reboot   system boot  4.8.0-34-generic Sun Jan 22 06:56 - 21:56 (1+15:00)
+sourec   pts/2        Sathanas         Sat Jan 21 17:07 - crash  (13:48)
+sourec   tty7         :0               Sat Jan 21 17:06 - crash  (13:49)
+reboot   system boot  4.8.0-34-generic Sat Jan 21 17:05 - 21:56 (2+04:50)
+sourec   pts/1        Sathanas         Sat Jan 21 10:25 - down   (06:36)
+sourec   tty7         :0               Sat Jan 21 10:16 - down   (06:45)
+reboot   system boot  4.8.0-34-generic Sat Jan 21 10:16 - 17:01  (06:45)
+sourec   pts/10       Sathanas         Fri Jan 20 23:31 - crash  (10:44)
+sourec   pts/2        Sathanas         Fri Jan 20 23:15 - crash  (11:00)
+sourec   tty7         :0               Fri Jan 20 23:14 - crash  (11:02)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 23:11 - 17:01  (17:50)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 23:02 - 17:01  (17:59)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 22:43 - 17:01  (18:17)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 22:41 - 17:01  (18:20)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 22:38 - 17:01  (18:23)
+sourec   pts/17       Sathanas         Fri Jan 20 22:09 - down   (00:28)
+sourec   tty7         :0               Fri Jan 20 22:08 - down   (00:29)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 17:07 - 22:38  (05:30)
+sourec   pts/6        Sathanas         Fri Jan 20 21:48 - down   (00:06)
+sourec   tty7         :0               Fri Jan 20 21:45 - down   (00:09)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 21:45 - 21:55  (00:10)
+sourec   pts/17       Sathanas         Fri Jan 20 19:02 - down   (00:07)
+sourec   tty7         :0               Fri Jan 20 19:02 - down   (00:08)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 13:58 - 19:10  (05:12)
+sourec   pts/2        Sathanas         Fri Jan 20 17:44 - down   (00:00)
+sourec   pts/18       Sathanas         Fri Jan 20 17:36 - down   (00:08)
+sourec   pts/2        Sathanas         Fri Jan 20 17:33 - 17:44  (00:10)
+sourec   tty7         :0               Fri Jan 20 17:32 - down   (00:12)
+reboot   system boot  4.4.0-59-generic Fri Jan 20 17:32 - 17:44  (00:12)
+sourec   pts/17       Sathanas         Fri Jan 20 17:21 - crash  (00:10)
+sourec   pts/2        Sathanas         Fri Jan 20 17:14 - crash  (00:17)
+sourec   tty7         :0               Fri Jan 20 17:11 - crash  (00:20)
+reboot   system boot  4.4.0-59-generic Fri Jan 20 17:11 - 17:44  (00:33)
+sourec   tty7         :0               Fri Jan 20 12:07 - crash  (05:03)
+reboot   system boot  4.4.0-59-generic Fri Jan 20 12:07 - 17:44  (05:37)
+
+wtmp begins Fri Jan 20 12:07:43 2017
+
+Elapsed time: 0.004547 s
+Page faults: 0
+Page faults (reclaimed): 125
+
+
+===== Mid-Day Commander, v1 =====
+G'day, Commander! What command would you like to run?
+	0. whoami 
+	1. last 
+	2. ls --color=tty 
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+Option?: 
+cmds.txt  Makefile  mc1  mc1.c
+
+Elapsed time: 0.002145 s
+Page faults: 0
+Page faults (reclaimed): 103
+
+
+===== Mid-Day Commander, v1 =====
+G'day, Commander! What command would you like to run?
+	0. whoami 
+	1. last 
+	2. ls --color=tty 
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+Option?: 
+What command would you like to add, Commander?: 
+===== Mid-Day Commander, v1 =====
+G'day, Commander! What command would you like to run?
+	0. whoami 
+	1. last 
+	2. ls --color=tty 
+	3. ls -alh 
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+Option?: 
+What directory would you like to change to, Commander?: 
+===== Mid-Day Commander, v1 =====
+G'day, Commander! What command would you like to run?
+	0. whoami 
+	1. last 
+	2. ls --color=tty 
+	3. ls -alh 
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+Option?: 
+Current working directory: /home
+
+===== Mid-Day Commander, v1 =====
+G'day, Commander! What command would you like to run?
+	0. whoami 
+	1. last 
+	2. ls --color=tty 
+	3. ls -alh 
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+Option?: 
+total 12K
+drwxr-xr-x  3 sourec sourec 4.0K Jan 21 17:12 .
+drwxr-xr-x 25 root   root   4.0K Jan 20 19:06 ..
+drwxr-xr-x 82 sourec sourec 4.0K Jan 24 17:18 sourec
+
+Elapsed time: 0.004216 s
+Page faults: 0
+Page faults (reclaimed): 141
+
+
+===== Mid-Day Commander, v1 =====
+G'day, Commander! What command would you like to run?
+	0. whoami 
+	1. last 
+	2. ls --color=tty 
+	3. ls -alh 
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+Option?: 
+Goodbye, Commander...
+--crmyers 2017
+

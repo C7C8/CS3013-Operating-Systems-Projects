@@ -1,0 +1,117 @@
+# Some of these outputs are a little out of order as an indirect result of feeding the
+# input file directly - notably the option prompt always appears after the output of the
+# program to be run. This does NOT happen during normal interactive mode. As far as I can
+# tell, there is nothing I can do about this on the C side of things. -- crmyers 2017
+
+===== Mid-Day Commander, v0 =====
+G'day, Commander! What command would you like to run?
+	0. whoami	: Prints out the result of the whoamicommand
+	1. last	: Prints out the result of the last command
+	2. ls	: Prints out the result of a listing on a user-specified path
+sourec
+Option?: Elapsed time: 1484884096.000000 s
+
+Page faults: 0
+Page faults (reclaimed): 100
+
+===== Mid-Day Commander, v0 =====
+G'day, Commander! What command would you like to run?
+	0. whoami	: Prints out the result of the whoamicommand
+	1. last	: Prints out the result of the last command
+	2. ls	: Prints out the result of a listing on a user-specified path
+sourec   pts/10       Sathanas         Tue Jan 24 16:05   still logged in
+sourec   pts/17       130.215.222.193  Tue Jan 24 13:19 - 14:05  (00:46)
+sourec   pts/10       130.215.222.193  Tue Jan 24 13:19 - 15:41  (02:22)
+sourec   pts/10       130.215.222.193  Tue Jan 24 12:55 - 12:56  (00:00)
+sourec   pts/10       130.215.222.193  Tue Jan 24 12:28 - 12:28  (00:00)
+sourec   pts/10       130.215.222.193  Tue Jan 24 12:27 - 12:28  (00:01)
+sourec   pts/10       130.215.222.193  Tue Jan 24 12:25 - 12:26  (00:00)
+sourec   pts/6        Sathanas         Tue Jan 24 08:03   still logged in
+sourec   tty7         :0               Tue Jan 24 08:02    gone - no logout
+reboot   system boot  4.8.0-34-generic Tue Jan 24 08:00   still running
+sourec   pts/9        Sathanas         Mon Jan 23 17:18 - down   (04:37)
+sourec   pts/9        Sathanas         Mon Jan 23 17:09 - 17:18  (00:09)
+sourec   pts/6        Sathanas         Mon Jan 23 16:54 - down   (05:02)
+sourec   tty7         :0               Mon Jan 23 16:00 - down   (05:56)
+sourec   pts/6        Sathanas         Mon Jan 23 11:55 - 16:54  (04:59)
+sourec   pts/17       Sathanas         Mon Jan 23 08:01 - down   (13:55)
+sourec   tty7         :0               Mon Jan 23 08:01 - 13:46  (05:44)
+reboot   system boot  4.8.0-34-generic Mon Jan 23 08:00 - 21:56  (13:55)
+sourec   pts/10       Sathanas         Sun Jan 22 19:17 - crash  (12:43)
+sourec   pts/6        Sathanas         Sun Jan 22 19:14 - crash  (12:46)
+sourec   pts/10       Sathanas         Sun Jan 22 18:29 - 19:17  (00:47)
+sourec   pts/6        Sathanas         Sun Jan 22 18:28 - 19:14  (00:46)
+sourec   pts/6        Sathanas         Sun Jan 22 18:28 - 18:28  (00:00)
+sourec   pts/6        Sathanas         Sun Jan 22 16:22 - 18:28  (02:05)
+sourec   tty7         :0               Sun Jan 22 13:26 - crash  (18:34)
+reboot   system boot  4.8.0-34-generic Sun Jan 22 10:54 - 21:56 (1+11:02)
+sourec   tty7         :0               Sun Jan 22 13:24 - crash  (-2:-29)
+reboot   system boot  4.8.0-34-generic Sun Jan 22 13:23 - 21:56 (1+08:32)
+sourec   tty7         :0               Sun Jan 22 13:15 - crash  (00:08)
+reboot   system boot  4.8.0-34-generic Sun Jan 22 13:13 - 21:56 (1+08:42)
+sourec   tty7         :0               Sun Jan 22 13:07 - crash  (00:06)
+reboot   system boot  4.8.0-34-generic Sun Jan 22 06:56 - 21:56 (1+15:00)
+sourec   pts/2        Sathanas         Sat Jan 21 17:07 - crash  (13:48)
+sourec   tty7         :0               Sat Jan 21 17:06 - crash  (13:49)
+reboot   system boot  4.8.0-34-generic Sat Jan 21 17:05 - 21:56 (2+04:50)
+sourec   pts/1        Sathanas         Sat Jan 21 10:25 - down   (06:36)
+sourec   tty7         :0               Sat Jan 21 10:16 - down   (06:45)
+reboot   system boot  4.8.0-34-generic Sat Jan 21 10:16 - 17:01  (06:45)
+sourec   pts/10       Sathanas         Fri Jan 20 23:31 - crash  (10:44)
+sourec   pts/2        Sathanas         Fri Jan 20 23:15 - crash  (11:00)
+sourec   tty7         :0               Fri Jan 20 23:14 - crash  (11:02)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 23:11 - 17:01  (17:50)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 23:02 - 17:01  (17:59)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 22:43 - 17:01  (18:17)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 22:41 - 17:01  (18:20)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 22:38 - 17:01  (18:23)
+sourec   pts/17       Sathanas         Fri Jan 20 22:09 - down   (00:28)
+sourec   tty7         :0               Fri Jan 20 22:08 - down   (00:29)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 17:07 - 22:38  (05:30)
+sourec   pts/6        Sathanas         Fri Jan 20 21:48 - down   (00:06)
+sourec   tty7         :0               Fri Jan 20 21:45 - down   (00:09)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 21:45 - 21:55  (00:10)
+sourec   pts/17       Sathanas         Fri Jan 20 19:02 - down   (00:07)
+sourec   tty7         :0               Fri Jan 20 19:02 - down   (00:08)
+reboot   system boot  4.8.0-34-generic Fri Jan 20 13:58 - 19:10  (05:12)
+sourec   pts/2        Sathanas         Fri Jan 20 17:44 - down   (00:00)
+sourec   pts/18       Sathanas         Fri Jan 20 17:36 - down   (00:08)
+sourec   pts/2        Sathanas         Fri Jan 20 17:33 - 17:44  (00:10)
+sourec   tty7         :0               Fri Jan 20 17:32 - down   (00:12)
+reboot   system boot  4.4.0-59-generic Fri Jan 20 17:32 - 17:44  (00:12)
+sourec   pts/17       Sathanas         Fri Jan 20 17:21 - crash  (00:10)
+sourec   pts/2        Sathanas         Fri Jan 20 17:14 - crash  (00:17)
+sourec   tty7         :0               Fri Jan 20 17:11 - crash  (00:20)
+reboot   system boot  4.4.0-59-generic Fri Jan 20 17:11 - 17:44  (00:33)
+sourec   tty7         :0               Fri Jan 20 12:07 - crash  (05:03)
+reboot   system boot  4.4.0-59-generic Fri Jan 20 12:07 - 17:44  (05:37)
+
+wtmp begins Fri Jan 20 12:07:43 2017
+Option?: Elapsed time: 1484881920.000000 s
+
+Page faults: 0
+Page faults (reclaimed): 126
+
+===== Mid-Day Commander, v0 =====
+G'day, Commander! What command would you like to run?
+	0. whoami	: Prints out the result of the whoamicommand
+	1. last	: Prints out the result of the last command
+	2. ls	: Prints out the result of a listing on a user-specified path
+total 44K
+drwxr-xr-x 2 sourec sourec 4.0K Jan 24 17:15 .
+drwxr-xr-x 5 sourec sourec 4.0K Jan 24 08:51 ..
+-rw-r--r-- 1 sourec sourec   13 Jan 24 17:15 cmds.txt
+-rw-r--r-- 1 sourec sourec   74 Jan 24 08:32 Makefile
+-rwxr-xr-x 1 sourec sourec  21K Jan 24 16:55 mc0
+-rw-r--r-- 1 sourec sourec 2.0K Jan 24 16:55 mc0.c
+Option?: Arguments?: Path?: Elapsed time: 1484877312.000000 s
+
+Page faults: 0
+Page faults (reclaimed): 139
+
+===== Mid-Day Commander, v0 =====
+G'day, Commander! What command would you like to run?
+	0. whoami	: Prints out the result of the whoamicommand
+	1. last	: Prints out the result of the last command
+	2. ls	: Prints out the result of a listing on a user-specified path
+Option?: Reached end of file; goodbye, Commander...

@@ -1,0 +1,187 @@
+===== Mid-Day Commander, v2 =====
+G'day, Commander! What command would you like to run?
+	0. whoami  
+	1. last  
+	2. ls --color=tty  
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+	r. running processes : Print a list of running processes
+Option?: 
+-- Add a command --
+What command would you like to add, Commander?: 
+===== Mid-Day Commander, v2 =====
+G'day, Commander! What command would you like to run?
+	0. whoami  
+	1. last  
+	2. ls --color=tty  
+	3. sleep 5 &
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+	r. running processes : Print a list of running processes
+Option?: 
+-- Add a command --
+What command would you like to add, Commander?: 
+===== Mid-Day Commander, v2 =====
+G'day, Commander! What command would you like to run?
+	0. whoami  
+	1. last  
+	2. ls --color=tty  
+	3. sleep 5 &
+	4. sleep 10 &
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+	r. running processes : Print a list of running processes
+Option?: 
+-- Add a command --
+What command would you like to add, Commander?: 
+===== Mid-Day Commander, v2 =====
+G'day, Commander! What command would you like to run?
+	0. whoami  
+	1. last  
+	2. ls --color=tty  
+	3. sleep 5 &
+	4. sleep 10 &
+	5. sleep 3 &
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+	r. running processes : Print a list of running processes
+Option?: 
+-- Add a command --
+What command would you like to add, Commander?: 
+===== Mid-Day Commander, v2 =====
+G'day, Commander! What command would you like to run?
+	0. whoami  
+	1. last  
+	2. ls --color=tty  
+	3. sleep 5 &
+	4. sleep 10 &
+	5. sleep 3 &
+	6. sleep 15  
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+	r. running processes : Print a list of running processes
+Option?: 
+Assigning background process #28745 slot 0 on the process table.
+
+===== Mid-Day Commander, v2 =====
+G'day, Commander! What command would you like to run?
+	0. whoami  
+	1. last  
+	2. ls --color=tty  
+	3. sleep 5 &
+	4. sleep 10 &
+	5. sleep 3 &
+	6. sleep 15  
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+	r. running processes : Print a list of running processes
+Option?: 
+Assigning background process #28746 slot 1 on the process table.
+
+===== Mid-Day Commander, v2 =====
+G'day, Commander! What command would you like to run?
+	0. whoami  
+	1. last  
+	2. ls --color=tty  
+	3. sleep 5 &
+	4. sleep 10 &
+	5. sleep 3 &
+	6. sleep 15  
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+	r. running processes : Print a list of running processes
+Option?: 
+Assigning background process #28747 slot 2 on the process table.
+
+===== Mid-Day Commander, v2 =====
+G'day, Commander! What command would you like to run?
+	0. whoami  
+	1. last  
+	2. ls --color=tty  
+	3. sleep 5 &
+	4. sleep 10 &
+	5. sleep 3 &
+	6. sleep 15  
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+	r. running processes : Print a list of running processes
+Option?: 
+-- Background Processes --
+[0]. 28745: sleep 5 
+[1]. 28746: sleep 10 
+[2]. 28747: sleep 3 
+
+===== Mid-Day Commander, v2 =====
+G'day, Commander! What command would you like to run?
+	0. whoami  
+	1. last  
+	2. ls --color=tty  
+	3. sleep 5 &
+	4. sleep 10 &
+	5. sleep 3 &
+	6. sleep 15  
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+	r. running processes : Print a list of running processes
+Option?: 
+----Process "sleep 3 " has completed ----
+-- Statistics --
+Elapsed time: 3.002122 s
+Page faults: 0
+Page faults (reclaimed): 78
+
+----Process "sleep 5 " has completed ----
+-- Statistics --
+Elapsed time: 5.001684 s
+Page faults: 0
+Page faults (reclaimed): 78
+
+----Process "sleep 10 " has completed ----
+-- Statistics --
+Elapsed time: 10.001385 s
+Page faults: 0
+Page faults (reclaimed): 77
+
+
+-- Statistics --
+Elapsed time: 15.002668 s
+Page faults: 0
+Page faults (reclaimed): 77
+
+
+===== Mid-Day Commander, v2 =====
+G'day, Commander! What command would you like to run?
+	0. whoami  
+	1. last  
+	2. ls --color=tty  
+	3. sleep 5 &
+	4. sleep 10 &
+	5. sleep 3 &
+	6. sleep 15  
+	a. add command : Adds a new commmand to the menu.
+	c. change directory : Changes process working directory
+	e. exit : Leave Mid-Day Commander
+	p. pwd : Prints working directory
+	r. running processes : Print a list of running processes
+Option?: 
+Goodbye, Commander...
+--crmyers 2017
+
