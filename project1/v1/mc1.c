@@ -14,7 +14,6 @@ struct linkedCmd {
 
 void execCmd(linkedCmd* cmd);
 void addCmd(linkedCmd* root, linkedCmd* newCmd);
-void freeCmdList(linkedCmd* root);
 linkedCmd* getCmd(linkedCmd* root, int pos);
 
 int main(){
@@ -59,10 +58,25 @@ int main(){
 		}
 
 		switch (option) {
-			case 'a' :
-				printf("It seems you've stumbled on an unimplemented feature, Commander!\n");
+			case 'a' : {
+				printf("What command would you like to add, Commander?: ");
+				linkedCmd* newCmd = (linkedCmd*)malloc(sizeof(newCmd));
+				unsigned long size = 1024;
+				char* str = (char*)malloc(size);
+				getline(&str, &size, stdin);
+				str[strlen(str)-1] = '\0'; //chop off the newline
+				newCmd->args[0] = strtok(str, " ");
+				for (int i = 1; i < 10; i++){
+					newCmd->args[i] = strtok(NULL, " ");
+					if (newCmd->args[i] == NULL)
+						break;
+				}
+
+				addCmd(cmdList, newCmd);
+				cmdcount++;
 				continue;
-			case 'c' :
+			}
+			case 'c' : {
 				printf("What directory would you like to change to, Commander?: ");
 				unsigned long size = 1024;
 				char* newWD = (char*)malloc(size);
@@ -71,12 +85,14 @@ int main(){
 				chdir((const char*)newWD);
 				free(newWD);
 				continue;
+			}
 			case 'e' :
 				printf("Goodbye, Commander...\n");
 				printf("--crmyers 2017\n");
-				freeCmdList(cmdList);
 				exit(0);
-			case 'p' : { //Braces needed because we're declaring a new variable
+				//Where'd all the memory for cmdList go? Well, it's only a memory leak if you
+				//lose access to it while the program runs... right?
+			case 'p' : { //Braces needed because we're declaring a new variable on the first line
 				char* cwd = getcwd(NULL, 0);
 				printf("Current working directory: %s\n", cwd);
 				free(cwd);
@@ -85,6 +101,7 @@ int main(){
 		}
 
 		printf("Commander, that isn't a command I can execute... are you okay?\n");
+		fflush(stdin);
 	}
 	return 0;
 }
@@ -111,14 +128,6 @@ void addCmd(linkedCmd* root, linkedCmd* newCmd){
 	addCmd(root->next, newCmd);
 }
 
-void freeCmdList(linkedCmd* root){
-	//Recursively free the cmdList
-	if (root == NULL)
-		return;
-	freeCmdList(root->next);
-	free(root);
-}
-
 void execCmd(linkedCmd* cmd){
 	struct timeval ctime;
 	gettimeofday(&ctime, NULL);
@@ -135,7 +144,7 @@ void execCmd(linkedCmd* cmd){
 		gettimeofday(&ntime, NULL);
 		float timeDelta = (float)(ntime.tv_usec - ctime.tv_usec) / 1000.0;
 		printf("\nElapsed time: %f ms\n", timeDelta);
-		printf("\nPage faults: %d\n", (int)usage.ru_majflt);
+		printf("Page faults: %d\n", (int)usage.ru_majflt);
 		printf("Page faults (reclaimed): %d\n\n", (int)usage.ru_minflt);
 	}
 }
