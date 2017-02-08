@@ -7,6 +7,10 @@ struct message {
 	char data[8]; //why not?
 	message* next;
 };
+
+int addMessage(message* head, message* msg);
+message* getMessage(message* head, unsigned int msgID);
+int delMessage(message* head, unsigned int msgID);
 	
 enum node_type {NODE_NORMAL, NODE_NOISY};
 typedef struct node node;
@@ -21,6 +25,7 @@ struct node {
 
 	//Message related functions
 	void (*recieve)(node*, message);
-	void (*nodeMain)(node*);
-
+	void (*nodeMain)(node*); 
 };
+
+int nodeCount = 0; //Terrible hack for getting reliable node IDs. It works for now!
