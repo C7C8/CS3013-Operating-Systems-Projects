@@ -1,6 +1,7 @@
 #pragma once
 #include <pthread.h>
+#include "node.h"
 
-node* initNormalNode(node* this, int newPosx, int newPosy);
-void normalRecieve(node* this, message msg); //This is c, I get to to use 'this' here without problem
-void normalNodeMain(node* this); 
+void initNormalNode(node* this, int newPosx, int newPosy);
+void normalRecieve(node* this, unsigned int msgID); //This is c, I get to to use 'this' here without problem
+void* normalNodeMain(void* val); 

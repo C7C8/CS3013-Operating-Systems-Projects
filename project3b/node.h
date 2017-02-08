@@ -3,8 +3,7 @@
 
 typedef struct message message;
 struct message {
-	int msgID;
-	char data[8]; //why not?
+	unsigned int msgID;
 	message* next;
 };
 
@@ -12,7 +11,7 @@ int addMessage(message* head, message* msg);
 message* getMessage(message* head, unsigned int msgID);
 int delMessage(message* head, unsigned int msgID);
 	
-enum node_type {NODE_NORMAL, NODE_NOISY};
+typedef enum {NODE_NORMAL, NODE_NOISY} node_type;
 typedef struct node node;
 struct node {
 	//Base node data 
@@ -20,13 +19,13 @@ struct node {
 	int posX;
 	int posY;
 	message* processedHead;
-	message* msgQueue;
+	message* msgQueueHead;
 	node_type type;
 	pthread_mutex_t msgQueueLock; 
 
 	//Message related functions
-	void (*recieve)(node*, message);
-	void (*nodeMain)(node*); 
+	void (*recieve)(node*, unsigned int);
+	void* (*nodeMain)(void*); 
 };
 
 int nodeCount = 0; //Terrible hack for getting reliable node IDs. It works for now!

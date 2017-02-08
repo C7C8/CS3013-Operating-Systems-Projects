@@ -46,7 +46,7 @@ int delMessage(message* head, unsigned int msgID){
 			prev->next = head->next;
 			return 1;
 		}
-		heads = head->next;
+		head = head->next;
 		prev = prev->next;
 	}
 	return 0;
