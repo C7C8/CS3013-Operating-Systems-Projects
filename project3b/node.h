@@ -20,8 +20,9 @@ struct node {
 	int posX;
 	int posY;
 	message* processedHead;
-	message* msgQueueHead;
+	message* msgQueue;
 	node_type type;
+	pthread_mutex_t msgQueueLock; 
 
 	//Message related functions
 	void (*recieve)(node*, message);
