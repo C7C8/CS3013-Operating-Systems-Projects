@@ -28,4 +28,3 @@ struct node {
 	void* (*nodeMain)(void*); 
 };
 
-int nodeCount = 0; //Terrible hack for getting reliable node IDs. It works for now!

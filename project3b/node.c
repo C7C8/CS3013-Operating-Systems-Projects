@@ -1,5 +1,7 @@
 #include "node.h"
 
+unsigned int nodeCount = 0; //Terrible hack for getting reliable node IDs. It works for now!
+
 //Adds a message to the given linked list head. Returns true if add was successful, false if add failed
 int addMessage(message* head, message* msg){
 	if (!head || !msg)

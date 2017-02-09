@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+extern unsigned int nodeCount;
+
 void initNormalNode(node* this, int newPosX, int newPosY){
 	memset(this, 0, sizeof(node));
 	this->nodeID = nodeCount++;
