@@ -10,6 +10,7 @@ struct message {
 };
 
 unsigned int msgCount;
+pthread_mutex_t msgCountMutex;
 
 int addMessage(message* head, message* msg);
 message* getMessage(message* head, unsigned int msgID);

@@ -24,6 +24,7 @@ int main(int argc, char* argv[]){
 	printf("Creating %d nodes (%d noisemakers)\n", NUM_NODES, NUM_NOISEMAKERS);
 	node nodes[NUM_NODES];
 	pthread_t threads[NUM_NODES];
+	pthread_mutex_init(&msgCountMutex, NULL);
 	
 	//TODO: Create actual noisemaker nodes
 	for (int i = 0; i < NUM_NODES; i++){
