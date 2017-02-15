@@ -51,7 +51,7 @@ int main(int argc, char* argv[]){
 		pthread_create(&threads[i], NULL, nodes[i].nodeMain, &nodes[i]);
 	}
 
-	system("sleep 5");
+	system("sleep 10");
 
 	//Close node files so nasty error messages don't get printed to the terminal
 	for (int i = 0; i < NUM_NODES; i++)

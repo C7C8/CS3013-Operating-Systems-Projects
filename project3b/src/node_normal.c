@@ -33,7 +33,8 @@ void initNormalNode(node* this, int newPosX, int newPosY){
 void normalRecieve(node* this, message* newMsg) {
 	//This lock should never be used in most situations, it's here just in case.
 	pthread_mutex_lock(&this->msgQueueLock);
-	if (!getMessage(this->processedHead, newMsg->msgID) && !getMessage(this->msgQueueHead, newMsg->msgID)){
+//	if (!getMessage(this->processedHead, newMsg->msgID) && !getMessage(this->msgQueueHead, newMsg->msgID))
+	{
 		addMessage(this->msgQueueHead, newMsg);
 		printf(/*this->log,*/ "Node %d received message ID:%d\n", this->nodeID, newMsg->msgID);
 	}
@@ -43,8 +44,8 @@ void normalRecieve(node* this, message* newMsg) {
 void* normalNodeMain(void* val){
 	node* this = (node*) val;
 	while (1){
-		usleep(5000); //5 msTime delay so the node isn't constantly trying to send messages
-		fprintf(this->log, "Node %d has woken up!\n", this->nodeID);
+		usleep(TALK_WINDOW_TIME); //5 msTime delay so the node isn't constantly trying to send messages
+		printf("Node %d has woken up!\n", this->nodeID);
 
 		//Are we going to send a message?
 		if ((rand() % 101 <= TALK_PROBABILITY)){
@@ -52,7 +53,7 @@ void* normalNodeMain(void* val){
 			message* msg = (message*)malloc(sizeof(message));
 
 			pthread_mutex_lock(&msgCountMutex);
-			printf("Node %d will send message ID:%d soon\n", this->nodeID, msgCount);
+			printf("Node %d wants to send message ID:%d soon\n", this->nodeID, msgCount);
 			msg->msgID = msgCount++;
 			pthread_mutex_unlock(&msgCountMutex);
 
@@ -61,7 +62,10 @@ void* normalNodeMain(void* val){
 			pthread_mutex_unlock(&this->msgQueueLock);
 		}
 
-		pthread_mutex_lock(&this->msgQueueLock);
+		if (pthread_mutex_trylock(&this->msgQueueLock)) {
+			printf("Node %d couldn't acquire its own msgQueueLock!\n", this->nodeID);
+			continue;
+		}
 		if (getMessage(this->msgQueueHead, 0)){
 
 			//Try to broadcast to the nearby nodes. First, though, we need to acquire relevant broadcast locks
@@ -85,7 +89,7 @@ void* normalNodeMain(void* val){
 				}
 				//If broadcast lock could not be acquired, roll back changes
 				if (failure) {
-					for (; lockedNodeCount >= 0; lockedNodeCount--) {
+					for (lockedNodeCount = lockedNodeCount - 1; lockedNodeCount >= 0; lockedNodeCount--) {
 						printf("Node %d rolling back changes to node %d...\n", this->nodeID,
 							   this->neighbors[lockedNodeCount]->nodeID);
 						pthread_mutex_unlock(&this->neighbors[lockedNodeCount]->broadcastLock);
@@ -108,11 +112,13 @@ void* normalNodeMain(void* val){
 			//Broadcast over, folks, let's go home... I mean, unlock our neighbors. Wait, is that a better or worse statement?
 			for (int i = 0; i < this->neighborCount; i++) {
 				pthread_mutex_unlock(&this->neighbors[i]->broadcastLock);
-				printf("Node %d unlocking node %d\n", this->nodeID, this->neighbors[i]->nodeID);
+				printf("Node %d is UNLOCKED by node %d\n", this->neighbors[i]->nodeID, this->nodeID);
 			}
 			pthread_mutex_unlock(&this->broadcastLock);
 		}
 		pthread_mutex_unlock(&this->msgQueueLock);
+
+		printf("Node %d going to sleep for %f ms\n", this->nodeID, TALK_WINDOW_TIME / 1000.f);
 	}
 }
 
