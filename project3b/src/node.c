@@ -32,7 +32,6 @@ message* getMessage(message* head, unsigned int msgID) {
 
 //Deletes a message with the given ID and returns 1 in the even of success. If the message did not exist or some error occurs, 1
 //is returned. If 0 is provided as msgID, then the first element in the list is deleted.
-//NOTE: THE MESSAGE IS NOT FREED, IT IS THE USER'S RESPOSIBILITY TO FREE() MESSAGES
 int delMessage(message* head, unsigned int msgID){
 	if (!head || !head->next)
 		return 0;

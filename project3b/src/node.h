@@ -1,5 +1,6 @@
 #pragma once
 #include <pthread.h>
+#include "params.h"
 
 typedef struct message message;
 struct message {
@@ -21,7 +22,9 @@ struct node {
 	message* processedHead;
 	message* msgQueueHead;
 	node_type type;
-	pthread_mutex_t msgQueueLock; 
+	pthread_mutex_t msgQueueLock;
+	int neighborCount;
+	node* neighbors[NUM_NODES];
 
 	//Message related functions
 	void (*recieve)(node*, unsigned int);

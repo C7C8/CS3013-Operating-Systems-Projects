@@ -30,8 +30,20 @@ int main(int argc, char* argv[]){
 	//TODO: Create actual noisemaker nodes
 	for (int i = 0; i < NUM_NODES; i++){
 		initNormalNode(&nodes[i], rand() % 100, rand() % 100);
-		printf("Created node ID:%d at (%d,%d)... now starting thread!\n", nodes[i].nodeID, nodes[i].posX, nodes[i].posY);
-		pthread_create(&threads[i], NULL, nodes[i].nodeMain, &nodes[i]);
+		printf("Created node ID:%d at (%d,%d)...\n", nodes[i].nodeID, nodes[i].posX, nodes[i].posY);
+		//pthread_create(&threads[i], NULL, nodes[i].nodeMain, &nodes[i]);
+	}
+
+	//Now give each node a list of its neighbors. This runs in O(n^2) time.
+	for (int i = 0; i < NUM_NODES; i++){
+		for (int j = 0; j < NUM_NODES; j++){
+			if (i == j)
+				continue;
+			if (abs(nodes[i].posX - nodes[j].posX) < 10 || abs(nodes[i].posY - nodes[j].posY) < 10) {
+				printf("Adding (%d, %d) to neighbor list of (%d, %d)...\n", nodes[j].posX, nodes[j].posY, nodes[i].posX, nodes[i].posY);
+				nodes[i].neighbors[nodes[i].neighborCount++] = &nodes[j];
+			}
+		}
 	}
 	return 0;
 }
