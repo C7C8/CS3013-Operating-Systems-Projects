@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-//#include "node.h"
 #include "node_normal.h"
-#include "params.h"
 
 /* Okay, my code doesn't work all the way. Not yet, anyways, but the checkpoint
  * contributions do require only a "partially working solution". TAs please

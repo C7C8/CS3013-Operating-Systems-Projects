@@ -1,6 +1,5 @@
 #include "node_normal.h"
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -31,14 +30,11 @@ void initNormalNode(node* this, int newPosX, int newPosY){
 }
 
 
-void normalRecieve(node* this, unsigned int msgID){
+void normalRecieve(node* this, message* newMsg){
 	//This lock should never be used in most situations, it's here just in case.
-	printf("Adding message to node %d\n", this->nodeID);
+	printf(/*this->log,*/ "Node %d received message ID:%d\n", this->nodeID, newMsg->msgID);
 	pthread_mutex_lock(&this->msgQueueLock);
-	message newMsg;
-	newMsg.msgID = msgID;
-	printf(/*this->log,*/ "Node %d received message ID:%d\n", this->nodeID, msgID);
-	addMessage(this->msgQueueHead, &newMsg);
+	addMessage(this->msgQueueHead, newMsg);
 	pthread_mutex_unlock(&this->msgQueueLock);
 }
 
@@ -50,10 +46,10 @@ void* normalNodeMain(void* val){
 		//Are we going to send a message?
 		if ((rand() % 101 <= TALK_PROBABILITY)){
 			//Append a message to our message queue
-			message msg;
-			msg.msgID = msgCount++;
+			message* msg = (message*)malloc(sizeof(message));
+			msg->msgID = msgCount++;
 			pthread_mutex_lock(&this->msgQueueLock);
-			addMessage(this->msgQueueHead, &msg);
+			addMessage(this->msgQueueHead, msg);
 			pthread_mutex_unlock(&this->msgQueueLock);
 		}
 
@@ -89,11 +85,11 @@ void* normalNodeMain(void* val){
 			while (getMessage(this->msgQueueHead, 0)){
 				message* msg = getMessage(this->msgQueueHead, 0);
 				if (!getMessage(this->processedHead, msg->msgID)){ //Check if we haven't already encountered this message
-					for (int i = 0; i < this->neighborCount; i++)
-						this->neighbors[i]->recieve(this->neighbors[i], msg->msgID);
+					for (int j = 0; j < this->neighborCount; j++)
+						this->neighbors[j]->recieve(this->neighbors[j], msg);
 				}
 				delMessage(this->msgQueueHead, msg->msgID);
-				addMessage(this->processedHead, msg->msgID);
+				addMessage(this->processedHead, msg);
 			}
 		}
 		pthread_mutex_unlock(&this->msgQueueLock);

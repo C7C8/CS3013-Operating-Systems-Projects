@@ -33,7 +33,7 @@ struct node {
 	pthread_mutex_t broadcastLock;
 
 	//Message related functions
-	void (*recieve)(node*, unsigned int);
+	void (*recieve)(node*, message*);
 	void* (*nodeMain)(void*);
 
 	//Node log

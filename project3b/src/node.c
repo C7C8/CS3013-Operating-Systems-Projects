@@ -5,8 +5,10 @@ unsigned int msgCount = 1;
 
 //Adds a message to the given linked list head. Returns true if add was successful, false if add failed
 int addMessage(message* head, message* msg){
-	if (!head || !msg)
+	if (!head || !msg) {
+		fprintf(stderr, "Got a nullptr on either msg or head!!\n");
 		return 0; //idiot check
+	}
 
 	//Find the end of the linked list
 	while (head->next)
@@ -19,7 +21,12 @@ int addMessage(message* head, message* msg){
 //Returns message of given ID using the given linked list head. If 0 is passed in for an ID, the first message will be returned.
 //Returns null on failure.
 message* getMessage(message* head, unsigned int msgID) {
-	if (msgID == 0 && head)
+	if(!head){
+		printf("getMessage got a nullptr on head!\n");
+		return NULL;
+	}
+
+	if (msgID == 0)
 		return head->next;
 
 	head = head->next;
