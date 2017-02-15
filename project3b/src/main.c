@@ -46,12 +46,12 @@ int main(int argc, char* argv[]){
 	}
 
 	//Start off the node threads!
-	for (int i = 0; i < NUM_NODES; i ++){
+	for (int i = 0; i < NUM_NODES - 1; i ++){
 		printf("Starting node %d main thread...\n", i);
 		pthread_create(&threads[i], NULL, nodes[i].nodeMain, &nodes[i]);
 	}
 
-	system("sleep 10");
+	system("sleep 5");
 
 	//Close node files so nasty error messages don't get printed to the terminal
 	for (int i = 0; i < NUM_NODES; i++)

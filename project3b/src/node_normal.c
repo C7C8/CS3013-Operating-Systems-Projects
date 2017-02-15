@@ -44,6 +44,7 @@ void* normalNodeMain(void* val){
 	node* this = (node*) val;
 	while (1){
 		usleep(5000); //5 msTime delay so the node isn't constantly trying to send messages
+		fprintf(this->log, "Node %d has woken up!\n", this->nodeID);
 
 		//Are we going to send a message?
 		if ((rand() % 101 <= TALK_PROBABILITY)){
