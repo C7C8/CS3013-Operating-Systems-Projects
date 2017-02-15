@@ -1,5 +1,6 @@
 #pragma once
 #include <pthread.h>
+#include <stdio.h>
 #include "params.h"
 
 typedef struct message message;
@@ -7,6 +8,8 @@ struct message {
 	unsigned int msgID;
 	message* next;
 };
+
+unsigned int msgCount;
 
 int addMessage(message* head, message* msg);
 message* getMessage(message* head, unsigned int msgID);
@@ -22,12 +25,18 @@ struct node {
 	message* processedHead;
 	message* msgQueueHead;
 	node_type type;
-	pthread_mutex_t msgQueueLock;
 	int neighborCount;
 	node* neighbors[NUM_NODES];
 
+	//Synchronization stuff
+	pthread_mutex_t msgQueueLock;
+	pthread_mutex_t broadcastLock;
+
 	//Message related functions
 	void (*recieve)(node*, unsigned int);
-	void* (*nodeMain)(void*); 
+	void* (*nodeMain)(void*);
+
+	//Node log
+	FILE *log;
 };
 

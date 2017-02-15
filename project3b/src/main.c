@@ -45,5 +45,18 @@ int main(int argc, char* argv[]){
 			}
 		}
 	}
+
+	//Start off the node threads!
+	for (int i = 0; i < NUM_NODES; i ++){
+		printf("Starting node %d main thread... this should be fun!\n", i);
+		pthread_create(&threads[i], NULL, nodes[i].nodeMain, &nodes[i]);
+	}
+
+	system("sleep 10");
+
+	//Close node files so nasty error messages don't get printed to the terminal
+	for (int i = 0; i < NUM_NODES; i++)
+		fclose(nodes[i].log);
+
 	return 0;
 }

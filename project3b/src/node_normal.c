@@ -13,14 +13,21 @@ void initNormalNode(node* this, int newPosX, int newPosY){
 	this->posY = newPosY;
 	this->processedHead = (message*)malloc(sizeof(message));
 	this->msgQueueHead = (message*)malloc(sizeof(message));
-	memset(this->msgQueueHead, 0, sizeof(message));
+	memset(this->msgQueueHead, 0, sizeof(message)); //0 out our processed and head messages
 	memset(this->processedHead, 0, sizeof(message));
 	pthread_mutex_init(&this->msgQueueLock, NULL);
+	pthread_mutex_init(&this->broadcastLock, NULL);
 	this->type = NODE_NORMAL;
 
 	//Function stuff
 	this->recieve = &normalRecieve;
 	this->nodeMain = &normalNodeMain;
+
+	//Node log stuff
+	char fname[6];
+	snprintf(fname, 6, "%d.log", this->nodeID);
+	this->log = fopen(fname, "a");
+	fprintf(this->log, "====NODE %d LOG BEGIN====\n", this->nodeID);
 }
 
 
@@ -30,6 +37,7 @@ void normalRecieve(node* this, unsigned int msgID){
 	pthread_mutex_lock(&this->msgQueueLock);
 	message newMsg;
 	newMsg.msgID = msgID;
+	printf(/*this->log,*/ "Node %d received message ID:%d\n", this->nodeID, msgID);
 	addMessage(this->msgQueueHead, &newMsg);
 	pthread_mutex_unlock(&this->msgQueueLock);
 }
@@ -37,17 +45,56 @@ void normalRecieve(node* this, unsigned int msgID){
 void* normalNodeMain(void* val){
 	node* this = (node*) val;
 	while (1){
-		//Spin! More or less. Just check message queue and move its contents on over to the process queue
-		usleep(100);
+		usleep(5000); //5 msTime delay so the node isn't constantly trying to send messages
+
+		//Are we going to send a message?
+		if ((rand() % 101 <= TALK_PROBABILITY)){
+			//Append a message to our message queue
+			message msg;
+			msg.msgID = msgCount++;
+			pthread_mutex_lock(&this->msgQueueLock);
+			addMessage(this->msgQueueHead, &msg);
+			pthread_mutex_unlock(&this->msgQueueLock);
+		}
 
 		pthread_mutex_lock(&this->msgQueueLock);
-		message* msg = NULL;
-		while (1){
-			msg = getMessage(this->msgQueueHead, 0);
-			if (msg)
-				addMessage(this->processedHead, msg);
-			else
-				break;
+		if (getMessage(this->msgQueueHead, 0)){
+
+			//Try to broadcast to the nearby nodes. First, though, we need to acquire relevant broadcast locks
+			if (pthread_mutex_trylock(&this->broadcastLock)) {
+				printf("Node %d can't broadcast now, it's receiving from elsewhere\n", this->nodeID);
+				continue; //from top of node loop
+			}
+
+			int i = 0;
+			int failure = 0;
+			for (; i < this->neighborCount; i++){
+				if(pthread_mutex_trylock(&this->neighbors[i]->broadcastLock)){
+					printf("Node %d failed to acquire lock on node %d, unlocking %i nodes\n", this->nodeID, this->neighbors[i]->nodeID, i);
+					failure = 1;
+					break;
+				}
+			}
+			//If broadcast lock could not be acquired, roll back changes
+			if (failure) {
+				for (i -= 1; i >= 0; i--) {
+					printf("Node %d rolling back changes to node %d...\n", this->nodeID, this->neighbors[i]->nodeID);
+					pthread_mutex_unlock(&this->neighbors[i]->broadcastLock);
+				}
+				continue; //from top of node loop
+			}
+
+			//Now that we've locked ourself and all nearby nodes, actually broadcast things! In this case, just go
+			//through the whole message queue and broadcast messages that need broadcasting.
+			while (getMessage(this->msgQueueHead, 0)){
+				message* msg = getMessage(this->msgQueueHead, 0);
+				if (!getMessage(this->processedHead, msg->msgID)){ //Check if we haven't already encountered this message
+					for (int i = 0; i < this->neighborCount; i++)
+						this->neighbors[i]->recieve(this->neighbors[i], msg->msgID);
+				}
+				delMessage(this->msgQueueHead, msg->msgID);
+				addMessage(this->processedHead, msg->msgID);
+			}
 		}
 		pthread_mutex_unlock(&this->msgQueueLock);
 	}
