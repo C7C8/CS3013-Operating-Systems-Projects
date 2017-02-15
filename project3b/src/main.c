@@ -46,7 +46,7 @@ int main(int argc, char* argv[]){
 
 	//Start off the node threads!
 	for (int i = 0; i < NUM_NODES; i ++){
-		printf("Starting node %d main thread... this should be fun!\n", i);
+		printf("Starting node %d main thread...\n", i);
 		pthread_create(&threads[i], NULL, nodes[i].nodeMain, &nodes[i]);
 	}
 

@@ -42,9 +42,11 @@ void* normalNodeMain(void* val){
 	node* this = (node*) val;
 	while (1){
 		usleep(5000); //5 msTime delay so the node isn't constantly trying to send messages
+		printf("Node %d has woken up!\n", this->nodeID);
 
 		//Are we going to send a message?
 		if ((rand() % 101 <= TALK_PROBABILITY)){
+			printf("Node %d will send a message soon\n", this->nodeID);
 			//Append a message to our message queue
 			message* msg = (message*)malloc(sizeof(message));
 			msg->msgID = msgCount++;
@@ -91,6 +93,11 @@ void* normalNodeMain(void* val){
 				delMessage(this->msgQueueHead, msg->msgID);
 				addMessage(this->processedHead, msg);
 			}
+
+			//Broadcast over, folks, let's go home... I mean, unlock our neighbors. Wait, is that a better or worse statement?
+			for (int j = 0; j < this->neighborCount; j++)
+				pthread_mutex_unlock(&this->neighbors[i]->broadcastLock);
+			pthread_mutex_unlock(&this->broadcastLock);
 		}
 		pthread_mutex_unlock(&this->msgQueueLock);
 	}
