@@ -33,7 +33,7 @@ void initNormalNode(node* this, int newPosX, int newPosY){
 void normalRecieve(node* this, message* newMsg) {
 	//This lock should never be used in most situations, it's here just in case.
 	pthread_mutex_lock(&this->msgQueueLock);
-//	if (!getMessage(this->processedHead, newMsg->msgID) && !getMessage(this->msgQueueHead, newMsg->msgID))
+	if (!getMessage(this->processedHead, newMsg->msgID) && !getMessage(this->msgQueueHead, newMsg->msgID))
 	{
 		addMessage(this->msgQueueHead, newMsg);
 		printf(/*this->log,*/ "Node %d received message ID:%d\n", this->nodeID, newMsg->msgID);
@@ -62,10 +62,7 @@ void* normalNodeMain(void* val){
 			pthread_mutex_unlock(&this->msgQueueLock);
 		}
 
-		if (pthread_mutex_trylock(&this->msgQueueLock)) {
-			printf("Node %d couldn't acquire its own msgQueueLock!\n", this->nodeID);
-			continue;
-		}
+
 		if (getMessage(this->msgQueueHead, 0)){
 
 			//Try to broadcast to the nearby nodes. First, though, we need to acquire relevant broadcast locks
@@ -105,8 +102,14 @@ void* normalNodeMain(void* val){
 				printf("Node %d broadcasting message %d\n", this->nodeID, msg->msgID);
 				for (int j = 0; j < this->neighborCount; j++)
 					this->neighbors[j]->recieve(this->neighbors[j], msg);
-				delMessage(this->msgQueueHead, msg->msgID);
+
+				while (pthread_mutex_trylock(&this->msgQueueLock)) {
+					printf("Node %d couldn't acquire its own msgQueueLock!\n", this->nodeID);
+					usleep(TALK_WINDOW_TIME);
+				}
+				delMessage(this->msgQueueHead, 0);
 				addMessage(this->processedHead, msg);
+				pthread_mutex_unlock(&this->msgQueueLock);
 			}
 
 			//Broadcast over, folks, let's go home... I mean, unlock our neighbors. Wait, is that a better or worse statement?

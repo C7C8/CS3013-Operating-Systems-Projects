@@ -1,6 +1,7 @@
 #pragma once
 #include <pthread.h>
 #include <stdio.h>
+#include <unistd.h>
 #include "params.h"
 
 typedef struct message message;

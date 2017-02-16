@@ -1,3 +1,4 @@
+#include <malloc.h>
 #include "node.h"
 
 unsigned int nodeCount = 0; //Terrible hack for getting reliable node IDs. It works for now!
@@ -5,16 +6,15 @@ unsigned int msgCount = 1;
 
 //Adds a message to the given linked list head. Returns true if add was successful, false if add failed
 int addMessage(message* head, message* msg){
-	if (!head || !msg) {
-		fprintf(stderr, "Got a nullptr on either msg or head!!\n");
-		return 0; //idiot check
-	}
+	//The message must be dynamically allocated and copied.
+	message* mMsg = (message*)malloc(sizeof(message));
+	*mMsg = *msg;
 
-	//Find the end of the linked list
-	while (head->next)
-		head = head->next;
+	if (head->next == head)
+		printf("Bit of a fuckup here\n");
+	mMsg->next = head->next;
+	head->next = mMsg;
 
-	head->next = msg;
 	return 1;
 }
 
@@ -44,19 +44,27 @@ int delMessage(message* head, unsigned int msgID){
 	if (!head || !head->next)
 		return 0;
 
-	if (msgID == 0 && head->next)
-		head = head->next->next;
+	if (msgID == 0 && head->next) {
+		message* temp = head->next;
+		head->next = head->next->next;
+		free(temp);
+		return 1;
+	}
 	
 	//Loop through and find the appropriate msg ID
-	message* prev = head;
-	head = head->next;
-	while (head){
-		if (head->msgID == msgID){
-			prev->next = head->next;
+	while (head->next){
+		if (head->next->msgID == msgID) {
+			printf("Successfully deleted msg %d\n", msgID);
+			if (head->next == head->next->next)
+				printf("maxi fuckup here\n");
+			message* temp = head->next;
+			head->next = head->next->next;
+			free(temp);
 			return 1;
 		}
 		head = head->next;
-		prev = prev->next;
 	}
+
+	printf("mini fuckup here\n");
 	return 0;
 }

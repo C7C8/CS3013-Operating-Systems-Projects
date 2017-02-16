@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <string.h>
 #include "node_normal.h"
 
 /* Okay, my code doesn't work all the way. Not yet, anyways, but the checkpoint
@@ -30,7 +31,6 @@ int main(int argc, char* argv[]){
 	for (int i = 0; i < NUM_NODES; i++){
 		initNormalNode(&nodes[i], rand() % 100, rand() % 100);
 		printf("Created node ID:%d at (%d,%d)...\n", nodes[i].nodeID, nodes[i].posX, nodes[i].posY);
-		//pthread_create(&threads[i], NULL, nodes[i].nodeMain, &nodes[i]);
 	}
 
 	//Now give each node a list of its neighbors. This runs in O(n^2) time.
