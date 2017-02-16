@@ -55,7 +55,7 @@ void* normalNodeMain(void* val){
 		//Are we going to change channels?
 		if (rand() % 101 > DWELL_PROBABILITY) {
 			this->channel = rand() % 3;
-			printf("Node %d switching to channel %d", this->nodeID, this->channel);
+			printf("Node %d switching to channel %d\n", this->nodeID, this->channel);
 		}
 
 		//Are we going to send a message?
@@ -83,33 +83,32 @@ void* normalNodeMain(void* val){
 				continue; //from top of node loop
 			}
 
-			{ //Yes, this is supposed to be here. No, it's not remnant of a control statement
-				int failure = 0;
-
-				for (int i = 0; i < this->neighborCount; i++) {
-					if (this->neighbors[i]->channel != this->channel)
-						continue;
-					if (pthread_mutex_trylock(&this->neighbors[i]->broadcastLock)) {
-						printf("Node %d failed to acquire lock on node %d, unlocking nodes\n", this->nodeID, this->neighbors[i]->nodeID);
-						failure = 1;
-						break;
-					}
-					else
-						printf("Node %d is LOCKED by node %d\n", this->neighbors[i]->nodeID, this->nodeID);
+			int failure = 0;
+			int locked[NUM_NODES] = { 0 };
+			for (int i = 0; i < this->neighborCount; i++) {
+				if (this->neighbors[i]->channel != this->channel)
+					continue;
+				if (pthread_mutex_trylock(&this->neighbors[i]->broadcastLock)) {
+					printf("Node %d failed to acquire lock on node %d, unlocking nodes\n", this->nodeID, this->neighbors[i]->nodeID);
+					failure = 1;
+					break;
 				}
+				printf("Node %d is LOCKED by node %d\n", this->neighbors[i]->nodeID, this->nodeID);
+				locked[i] = 1;
+			}
 
-				//If broadcast lock could not be acquired, roll back changes
-				if (failure) {
-					for (int i = 0; i >= 0; lockedNodeCount--) {
-						if (this->channel == this->neighbors[lockedNodeCount]->channel) {
-							printf("Node %d is UNLOCKED by node %d after failure to acquire lock\n",
-								   this->neighbors[lockedNodeCount]->nodeID, this->nodeID);
-							pthread_mutex_unlock(&this->neighbors[lockedNodeCount]->broadcastLock);
-						}
+			//If broadcast lock could not be acquired, roll back changes
+			if (failure) {
+				for (int i = 0; i < this->neighborCount; i++)
+				{
+					if (locked[i]){
+						printf("Node %d is UNLOCKED by node %d after failure to acquire lock\n",
+							   this->neighbors[i]->nodeID, this->nodeID);
+						pthread_mutex_unlock(&this->neighbors[i]->broadcastLock);
 					}
-					pthread_mutex_unlock(&this->broadcastLock);
-					continue; //from top of node loop
 				}
+				pthread_mutex_unlock(&this->broadcastLock);
+				continue; //from top of node loop
 			}
 
 			//Now that we've locked ourself and all nearby nodes, actually broadcast things! In this case, just go
@@ -118,7 +117,8 @@ void* normalNodeMain(void* val){
 				unsigned int msg = getMessage(this->msgQueueHead, 0);
 				printf("Node %d broadcasting message %d\n", this->nodeID, msg);
 				for (int j = 0; j < this->neighborCount; j++)
-					this->neighbors[j]->recieve(this->neighbors[j], msg, this->channel);
+					if (locked[j])
+						this->neighbors[j]->recieve(this->neighbors[j], msg, this->channel);
 
 				pthread_mutex_lock(&this->msgQueueLock);
 				delMessage(this->msgQueueHead, 0);
@@ -128,8 +128,10 @@ void* normalNodeMain(void* val){
 
 			//Broadcast over, folks, let's go home... I mean, unlock our neighbors. Wait, is that a better or worse statement?
 			for (int i = 0; i < this->neighborCount; i++) {
-				pthread_mutex_unlock(&this->neighbors[i]->broadcastLock);
-				printf("Node %d is UNLOCKED by node %d\n", this->neighbors[i]->nodeID, this->nodeID);
+				if (locked[i]) {
+					pthread_mutex_unlock(&this->neighbors[i]->broadcastLock);
+					printf("Node %d is UNLOCKED by node %d\n", this->neighbors[i]->nodeID, this->nodeID);
+				}
 			}
 			pthread_mutex_unlock(&this->broadcastLock);
 		}
