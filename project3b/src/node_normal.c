@@ -56,11 +56,11 @@ void* normalNodeMain(void* val){
 		struct timeval ctime, delta;
 		gettimeofday(&ctime, NULL);
 		timersub(&ctime, &this->lastDwell, &delta);
-		if (delta.tv_usec > DWELL_DURATION){
+		if ((float)delta.tv_usec / 1000000.f > DWELL_DURATION){
 			printf("Node %d considering whether to change channels\n", this->nodeID);
 			gettimeofday(&this->lastDwell, NULL);
 			if (rand() % 101 > DWELL_PROBABILITY) {
-				this->channel = rand() % 3;
+				this->channel = (unsigned int) (rand() % 3);
 				printf("Node %d switching to channel %d\n", this->nodeID, this->channel);
 			}
 		}
