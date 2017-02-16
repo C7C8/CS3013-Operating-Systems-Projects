@@ -13,8 +13,8 @@ void initNormalNode(node* this, int newPosX, int newPosY){
 	this->msgQueueHead = (message*)malloc(sizeof(message));
 	memset(this->msgQueueHead, 0, sizeof(message)); //0 out our processed and head messages
 	memset(this->processedHead, 0, sizeof(message));
-	pthread_mutex_init(&this->msgQueueLock, NULL);
-	pthread_mutex_init(&this->broadcastLock, NULL);
+	sem_init(&this->msgQueueLock, 0, 1);
+	sem_init(&this->broadcastLock, 0, 1);
 	this->type = NODE_NORMAL;
 	this->channel = 0;
 	gettimeofday(&this->lastDwell, NULL);
@@ -37,19 +37,16 @@ void normalRecieve(node* this, unsigned int msg, unsigned int channel) {
 		return;
 	}
 
-	pthread_mutex_lock(&this->msgQueueLock);
+	sem_wait(&this->msgQueueLock);
 	if (!getMessage(this->processedHead, msg) && !getMessage(this->msgQueueHead, msg))
 	{
 		addMessage(this->msgQueueHead, msg);
 		fprintf(this->log, /*this->log,*/ "Node %d received message ID:%d\n", this->nodeID, msg);
 	}
-	pthread_mutex_unlock(&this->msgQueueLock);
+	sem_post(&this->msgQueueLock);
 }
 
 void* normalNodeMain(void* val){
-	pthread_cond_wait(&startVar, &startMutex);
-	pthread_mutex_unlock(&startMutex);
-
 	node* this = (node*) val;
 	while (1){
 		usleep(TALK_WINDOW_TIME); //5 msTime delay so the node isn't constantly trying to send messages
@@ -78,9 +75,9 @@ void* normalNodeMain(void* val){
 			msg = msgCount++;
 			pthread_mutex_unlock(&msgCountMutex);
 
-			pthread_mutex_lock(&this->msgQueueLock);
+			sem_wait(&this->msgQueueLock);
 			addMessage(this->msgQueueHead, msg);
-			pthread_mutex_unlock(&this->msgQueueLock);
+			sem_post(&this->msgQueueLock);
 		}
 
 
@@ -88,7 +85,7 @@ void* normalNodeMain(void* val){
 			fprintf(this->log, "Node %d wants to transmit messages in its queue\n", this->nodeID);
 
 			//Try to broadcast to the nearby nodes. First, though, we need to acquire relevant broadcast locks
-			if (pthread_mutex_trylock(&this->broadcastLock)) {
+			if (sem_trywait(&this->broadcastLock)) {
 				fprintf(this->log, "Node %d can't broadcast now, it's receiving from elsewhere\n", this->nodeID);
 				continue; //from top of node loop
 			}
@@ -98,7 +95,7 @@ void* normalNodeMain(void* val){
 			for (int i = 0; i < this->neighborCount; i++) {
 				if (this->neighbors[i]->channel != this->channel)
 					continue;
-				if (pthread_mutex_trylock(&this->neighbors[i]->broadcastLock)) {
+				if (sem_trywait(&this->neighbors[i]->broadcastLock)) {
 					fprintf(this->log, "Node %d failed to acquire lock on node %d, unlocking nodes\n", this->nodeID, this->neighbors[i]->nodeID);
 					failure = 1;
 					break;
@@ -114,10 +111,10 @@ void* normalNodeMain(void* val){
 					if (locked[i]){
 						fprintf(this->log, "Node %d is UNLOCKED by node %d after failure to acquire lock\n",
 							   this->neighbors[i]->nodeID, this->nodeID);
-						pthread_mutex_unlock(&this->neighbors[i]->broadcastLock);
+						sem_post(&this->neighbors[i]->broadcastLock);
 					}
 				}
-				pthread_mutex_unlock(&this->broadcastLock);
+				sem_post(&this->broadcastLock);
 				continue; //from top of node loop
 			}
 
@@ -130,22 +127,22 @@ void* normalNodeMain(void* val){
 					if (locked[j])
 						this->neighbors[j]->recieve(this->neighbors[j], msg, this->channel);
 
-				pthread_mutex_lock(&this->msgQueueLock);
+				sem_wait(&this->msgQueueLock);
 				delMessage(this->msgQueueHead, 0);
 				addMessage(this->processedHead, msg);
-				pthread_mutex_unlock(&this->msgQueueLock);
+				sem_post(&this->msgQueueLock);
 			}
 
 			//Broadcast over, folks, let's go home... I mean, unlock our neighbors. Wait, is that a better or worse statement?
 			for (int i = 0; i < this->neighborCount; i++) {
 				if (locked[i]) {
-					pthread_mutex_unlock(&this->neighbors[i]->broadcastLock);
+					sem_post(&this->neighbors[i]->broadcastLock);
 					fprintf(this->log, "Node %d is UNLOCKED by node %d\n", this->neighbors[i]->nodeID, this->nodeID);
 				}
 			}
-			pthread_mutex_unlock(&this->broadcastLock);
+			sem_post(&this->broadcastLock);
 		}
-		pthread_mutex_unlock(&this->msgQueueLock);
+		sem_post(&this->msgQueueLock);
 
 		fprintf(this->log, "Node %d going to sleep for %f ms\n", this->nodeID, TALK_WINDOW_TIME / 1000.f);
 	}

@@ -13,8 +13,8 @@ void initNoisyNode(node* this, int newPosX, int newPosY){
 	this->msgQueueHead = (message*)malloc(sizeof(message));
 	memset(this->msgQueueHead, 0, sizeof(message)); //0 out our processed and head messages
 	memset(this->processedHead, 0, sizeof(message));
-	pthread_mutex_init(&this->msgQueueLock, NULL);
-	pthread_mutex_init(&this->broadcastLock, NULL);
+	sem_init(&this->msgQueueLock, 0, 1);
+	sem_init(&this->broadcastLock, 0, 1);
 	this->type = NODE_NORMAL;
 	this->channel = 0;
 	gettimeofday(&this->lastDwell, NULL);
@@ -35,9 +35,6 @@ void noisyRecieve(node* this, unsigned int msg, unsigned int channel) {
 }
 
 void* noisyNodeMain(void* val){
-	pthread_cond_wait(&startVar, &startMutex);
-	pthread_mutex_unlock(&startMutex);
-
 	node* this = (node*) val;
 	while (1){
 
@@ -57,10 +54,10 @@ void* noisyNodeMain(void* val){
 		//Shall we activate?
 		if (rand() % 100 < NOISEMAKER_ACTIVATE_PROBABILITY){
 			fprintf(this->log, "Noisemaker node %d at (%d, %d) activating on channel %d... *microwave BZZZZZT*\n", this->nodeID, this->posX, this->posY, this->channel);
-			pthread_mutex_lock(&this->broadcastLock);
+			sem_wait(&this->broadcastLock);
 			usleep(rand() % NOISEMAKER_MAX_TIME);
 			fprintf(this->log, "Noisemaker node %d at (%d, %d) deactivating on channel %d*\n", this->nodeID, this->posX, this->posY, this->channel);
-			pthread_mutex_unlock(&this->broadcastLock);
+			sem_post(&this->broadcastLock);
 		}
 
 		fprintf(this->log, "Noisemaker node %d going to sleep for %f ms\n", this->nodeID, TALK_WINDOW_TIME / 1000.f);

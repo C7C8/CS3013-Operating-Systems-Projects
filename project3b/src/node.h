@@ -1,5 +1,6 @@
 #pragma once
 #include <pthread.h>
+#include <semaphore.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/time.h>
@@ -13,8 +14,6 @@ struct message {
 
 unsigned int msgCount;
 pthread_mutex_t msgCountMutex;
-pthread_mutex_t startMutex; //checking the box...
-pthread_cond_t startVar;
 
 unsigned int addMessage(message* head, unsigned int msg);
 unsigned int getMessage(message* head, unsigned int msgID);
@@ -36,8 +35,8 @@ struct node {
 	struct timeval lastDwell;
 
 	//Synchronization stuff
-	pthread_mutex_t msgQueueLock;
-	pthread_mutex_t broadcastLock;
+	sem_t msgQueueLock;
+	sem_t broadcastLock;
 
 	//Message related functions
 	void (*recieve)(node*, unsigned int, unsigned int);
