@@ -29,13 +29,14 @@ struct node {
 	node_type type;
 	int neighborCount;
 	node* neighbors[NUM_NODES];
+	unsigned int channel;
 
 	//Synchronization stuff
 	pthread_mutex_t msgQueueLock;
 	pthread_mutex_t broadcastLock;
 
 	//Message related functions
-	void (*recieve)(node*, unsigned int);
+	void (*recieve)(node*, unsigned int, unsigned int);
 	void* (*nodeMain)(void*);
 
 	//Node log

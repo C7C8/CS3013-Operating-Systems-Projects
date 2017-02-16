@@ -1,21 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <string.h>
 #include "node_normal.h"
 
-/* Okay, my code doesn't work all the way. Not yet, anyways, but the checkpoint
- * contributions do require only a "partially working solution". TAs please
- * have mercy, I had a major team meeting with my Software Engineering team
- * alongside a boatload of work from that class (project due thursday
- * afternoon...). Anyways, since I don't have much code in good standing yet,
- * here is a plain english explanation of how I will tackle the problem:
- *
- * Briefly, nodes will each maintain a simple broadcast lock. When a node wants to broadcast, it will
+
+/*
+ * Briefly, nodes each maintain a simple broadcast lock. When a node wants to broadcast, it will
  * try to acquire all of the broadcast locks to its neighbors. If it cannot do so, it will not broadcast.
- * If it does aquire all those locks, it will lock its own broadcast lock, broadcast its message, then
+ * If it does acquire all those locks, it will lock its own broadcast lock, broadcast its message, then
  * unlock everything it previously locked. Noisemakers will not send their own messages per se, when they 
- * activate they will simply lock their own lock, and will unlock it when they deactivate. This approach 
+ * activate they lock their own broadcast lock, and will unlock it when they deactivate. This approach
  * is very loosely adapted from my original round robin approach that was discarded due to not maximizing
  * concurrency. 
  */

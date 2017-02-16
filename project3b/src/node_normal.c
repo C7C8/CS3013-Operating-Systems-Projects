@@ -16,6 +16,7 @@ void initNormalNode(node* this, int newPosX, int newPosY){
 	pthread_mutex_init(&this->msgQueueLock, NULL);
 	pthread_mutex_init(&this->broadcastLock, NULL);
 	this->type = NODE_NORMAL;
+	this->channel = 0;
 
 	//Function stuff
 	this->recieve = &normalRecieve;
@@ -29,8 +30,13 @@ void initNormalNode(node* this, int newPosX, int newPosY){
 }
 
 
-void normalRecieve(node* this, unsigned int msg) {
-	//This lock should never be used in most situations, it's here just in case.
+void normalRecieve(node* this, unsigned int msg, unsigned int channel) {
+	if (this->channel != channel){
+		printf("Node %d discarded a received message -- it's listening on channel %d but the message arrived on channel %d\n!",
+			   this->nodeID, this->channel, channel);
+		return;
+	}
+
 	pthread_mutex_lock(&this->msgQueueLock);
 	if (!getMessage(this->processedHead, msg) && !getMessage(this->msgQueueHead, msg))
 	{
@@ -46,13 +52,19 @@ void* normalNodeMain(void* val){
 		usleep(TALK_WINDOW_TIME); //5 msTime delay so the node isn't constantly trying to send messages
 		printf("Node %d has woken up!\n", this->nodeID);
 
+		//Are we going to change channels?
+		if (rand() % 101 > DWELL_PROBABILITY) {
+			this->channel = rand() % 3;
+			printf("Node %d switching to channel %d", this->nodeID, this->channel);
+		}
+
 		//Are we going to send a message?
 		if ((rand() % 101 <= TALK_PROBABILITY)){
 			//Append a message to our message queue
 			unsigned int msg = 0;
 
 			pthread_mutex_lock(&msgCountMutex);
-			printf("Node %d wants to send message ID:%d soon\n", this->nodeID, msgCount);
+			printf("Node %d wants to broadcast message ID:%d soon\n", this->nodeID, msgCount);
 			msg = msgCount++;
 			pthread_mutex_unlock(&msgCountMutex);
 
@@ -72,23 +84,28 @@ void* normalNodeMain(void* val){
 			}
 
 			{ //Yes, this is supposed to be here. No, it's not remnant of a control statement
-				int lockedNodeCount = 0;
 				int failure = 0;
-				for (; lockedNodeCount < this->neighborCount; lockedNodeCount++) {
-					if (pthread_mutex_trylock(&this->neighbors[lockedNodeCount]->broadcastLock)) {
-						printf("Node %d failed to acquire lock on node %d, unlocking nodes\n", this->nodeID, this->neighbors[lockedNodeCount]->nodeID);
+
+				for (int i = 0; i < this->neighborCount; i++) {
+					if (this->neighbors[i]->channel != this->channel)
+						continue;
+					if (pthread_mutex_trylock(&this->neighbors[i]->broadcastLock)) {
+						printf("Node %d failed to acquire lock on node %d, unlocking nodes\n", this->nodeID, this->neighbors[i]->nodeID);
 						failure = 1;
 						break;
 					}
 					else
-						printf("Node %d is LOCKED by node %d\n", this->neighbors[lockedNodeCount]->nodeID, this->nodeID);
+						printf("Node %d is LOCKED by node %d\n", this->neighbors[i]->nodeID, this->nodeID);
 				}
 
 				//If broadcast lock could not be acquired, roll back changes
 				if (failure) {
-					for (lockedNodeCount = lockedNodeCount - 1; lockedNodeCount >= 0; lockedNodeCount--) {
-						printf("Node %d is UNLOCKED by node %d after failure to acquire lock\n", this->neighbors[lockedNodeCount]->nodeID, this->nodeID);
-						pthread_mutex_unlock(&this->neighbors[lockedNodeCount]->broadcastLock);
+					for (int i = 0; i >= 0; lockedNodeCount--) {
+						if (this->channel == this->neighbors[lockedNodeCount]->channel) {
+							printf("Node %d is UNLOCKED by node %d after failure to acquire lock\n",
+								   this->neighbors[lockedNodeCount]->nodeID, this->nodeID);
+							pthread_mutex_unlock(&this->neighbors[lockedNodeCount]->broadcastLock);
+						}
 					}
 					pthread_mutex_unlock(&this->broadcastLock);
 					continue; //from top of node loop
@@ -101,7 +118,7 @@ void* normalNodeMain(void* val){
 				unsigned int msg = getMessage(this->msgQueueHead, 0);
 				printf("Node %d broadcasting message %d\n", this->nodeID, msg);
 				for (int j = 0; j < this->neighborCount; j++)
-					this->neighbors[j]->recieve(this->neighbors[j], msg);
+					this->neighbors[j]->recieve(this->neighbors[j], msg, this->channel);
 
 				pthread_mutex_lock(&this->msgQueueLock);
 				delMessage(this->msgQueueHead, 0);
