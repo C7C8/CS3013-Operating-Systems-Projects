@@ -37,7 +37,7 @@ int main(int argc, char* argv[]){
 		for (int j = 0; j < NUM_NODES; j++){
 			if (i == j)
 				continue;
-			if (abs(nodes[i].posX - nodes[j].posX) < 10 || abs(nodes[i].posY - nodes[j].posY) < 10) {
+			if (abs(nodes[i].posX - nodes[j].posX) <= 5 || abs(nodes[i].posY - nodes[j].posY) <= 5) {
 				printf("Adding node:%d to neighbor list of node:%d\n", j, i);
 				nodes[i].neighbors[nodes[i].neighborCount++] = &nodes[j];
 			}
