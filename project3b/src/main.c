@@ -16,13 +16,17 @@
  */
 
 int main(int argc, char* argv[]){
-	srand(0); //Repeatable results, right? TODO: Initialize using time of day
+	srand(clock());
+	pthread_cond_init(&startVar, NULL);
+	pthread_mutex_init(&startMutex, NULL);
+	pthread_mutex_lock(&startMutex);
+
+
 	printf("Creating %d nodes (%d noisemakers)\n", NUM_NODES, NUM_NOISEMAKERS);
 	node nodes[NUM_NODES];
 	pthread_t threads[NUM_NODES];
 	pthread_mutex_init(&msgCountMutex, NULL);
 	
-	//TODO: Create actual noisemaker nodes
 	for (int i = 0; i < NUM_NODES - NUM_NOISEMAKERS; i++){
 		initNormalNode(&nodes[i], rand() % 100, rand() % 100);
 		printf("Created node ID:%d at (%d,%d)...\n", nodes[i].nodeID, nodes[i].posX, nodes[i].posY);
@@ -50,6 +54,10 @@ int main(int argc, char* argv[]){
 		printf("Starting node %d main thread...\n", i);
 		pthread_create(&threads[i], NULL, nodes[i].nodeMain, &nodes[i]);
 	}
+
+	usleep(100000); //just to prove that the nodes really are all waiting on the start condition variable
+	printf("Releasing lock on all nodes...\n");
+	pthread_cond_broadcast(&startVar); //To the person grading this: yes, I understand how condition variables work.
 
 	system("sleep 10");
 

@@ -35,6 +35,8 @@ void noisyRecieve(node* this, unsigned int msg, unsigned int channel) {
 }
 
 void* noisyNodeMain(void* val){
+	pthread_cond_wait(&startVar, &startMutex);
+
 	node* this = (node*) val;
 	while (1){
 

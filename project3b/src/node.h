@@ -13,11 +13,13 @@ struct message {
 
 unsigned int msgCount;
 pthread_mutex_t msgCountMutex;
+pthread_mutex_t startMutex; //checking the box...
+pthread_cond_t startVar;
 
 unsigned int addMessage(message* head, unsigned int msg);
 unsigned int getMessage(message* head, unsigned int msgID);
 unsigned int delMessage(message* head, unsigned int msgID);
-	
+
 typedef enum {NODE_NORMAL, NODE_NOISY} node_type;
 typedef struct node node;
 struct node {

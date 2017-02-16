@@ -47,6 +47,8 @@ void normalRecieve(node* this, unsigned int msg, unsigned int channel) {
 }
 
 void* normalNodeMain(void* val){
+	pthread_cond_wait(&startVar, &startMutex);
+
 	node* this = (node*) val;
 	while (1){
 		usleep(TALK_WINDOW_TIME); //5 msTime delay so the node isn't constantly trying to send messages
