@@ -1,4 +1,4 @@
-#include "node_normal.h"
+#include "node_noisemaker.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -31,7 +31,7 @@ void initNoisyNode(node* this, int newPosX, int newPosY){
 }
 
 void noisyRecieve(node* this, unsigned int msg, unsigned int channel) {
-	printf("Noisy node received a message... I guess the other guy didn't realize that I'm a microwave.\n");
+	printf("Noisy node u %d received a message... I guess the other guy didn't realize that I'm a microwave.\n", this->nodeID);
 }
 
 void* noisyNodeMain(void* val){

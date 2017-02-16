@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include "node_normal.h"
+#include "node_noisemaker.h"
 
 
 /*
@@ -22,12 +23,17 @@ int main(int argc, char* argv[]){
 	pthread_mutex_init(&msgCountMutex, NULL);
 	
 	//TODO: Create actual noisemaker nodes
-	for (int i = 0; i < NUM_NODES; i++){
+	for (int i = 0; i < NUM_NODES - NUM_NOISEMAKERS; i++){
 		initNormalNode(&nodes[i], rand() % 100, rand() % 100);
 		printf("Created node ID:%d at (%d,%d)...\n", nodes[i].nodeID, nodes[i].posX, nodes[i].posY);
 	}
 
-	//Now give each node a list of its neighbors. This runs in O(n^2) time.
+	for (int i = NUM_NODES - NUM_NOISEMAKERS; i < NUM_NODES; i++){
+		initNoisyNode(&nodes[i], rand() % 100, rand() % 100);
+		printf("Created noisemaker ID:%d at (%d,%d)...\n", nodes[i].nodeID, nodes[i].posX, nodes[i].posY);
+	}
+
+	//Now give each node a list of its neighbors.
 	for (int i = 0; i < NUM_NODES; i++){
 		for (int j = 0; j < NUM_NODES; j++){
 			if (i == j)
