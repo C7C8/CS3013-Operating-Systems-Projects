@@ -39,14 +39,14 @@ int main(int argc, char* argv[]){
 			if (i == j)
 				continue;
 			if (abs(nodes[i].posX - nodes[j].posX) < 10 || abs(nodes[i].posY - nodes[j].posY) < 10) {
-				printf("Adding (%d, %d) to neighbor list of (%d, %d)...\n", nodes[j].posX, nodes[j].posY, nodes[i].posX, nodes[i].posY);
+				printf("Adding node:%d to neighbor list of node:%d\n", j, i);
 				nodes[i].neighbors[nodes[i].neighborCount++] = &nodes[j];
 			}
 		}
 	}
 
 	//Start off the node threads!
-	for (int i = 0; i < NUM_NODES - 1; i ++){
+	for (int i = 0; i < NUM_NODES; i ++){
 		printf("Starting node %d main thread...\n", i);
 		pthread_create(&threads[i], NULL, nodes[i].nodeMain, &nodes[i]);
 	}

@@ -1,7 +1,6 @@
 #include "node_normal.h"
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 extern unsigned int nodeCount;
 
@@ -30,13 +29,13 @@ void initNormalNode(node* this, int newPosX, int newPosY){
 }
 
 
-void normalRecieve(node* this, message* newMsg) {
+void normalRecieve(node* this, unsigned int msg) {
 	//This lock should never be used in most situations, it's here just in case.
 	pthread_mutex_lock(&this->msgQueueLock);
-	if (!getMessage(this->processedHead, newMsg->msgID) && !getMessage(this->msgQueueHead, newMsg->msgID))
+	if (!getMessage(this->processedHead, msg) && !getMessage(this->msgQueueHead, msg))
 	{
-		addMessage(this->msgQueueHead, newMsg);
-		printf(/*this->log,*/ "Node %d received message ID:%d\n", this->nodeID, newMsg->msgID);
+		addMessage(this->msgQueueHead, msg);
+		printf(/*this->log,*/ "Node %d received message ID:%d\n", this->nodeID, msg);
 	}
 	pthread_mutex_unlock(&this->msgQueueLock);
 }
@@ -45,16 +44,16 @@ void* normalNodeMain(void* val){
 	node* this = (node*) val;
 	while (1){
 		usleep(TALK_WINDOW_TIME); //5 msTime delay so the node isn't constantly trying to send messages
-		printf("Node %d has woken up!\n", this->nodeID);
+		//printf("Node %d has woken up!\n", this->nodeID);
 
 		//Are we going to send a message?
 		if ((rand() % 101 <= TALK_PROBABILITY)){
 			//Append a message to our message queue
-			message* msg = (message*)malloc(sizeof(message));
+			unsigned int msg = 0;
 
 			pthread_mutex_lock(&msgCountMutex);
 			printf("Node %d wants to send message ID:%d soon\n", this->nodeID, msgCount);
-			msg->msgID = msgCount++;
+			msg = msgCount++;
 			pthread_mutex_unlock(&msgCountMutex);
 
 			pthread_mutex_lock(&this->msgQueueLock);
@@ -76,21 +75,21 @@ void* normalNodeMain(void* val){
 				int failure = 0;
 				for (; lockedNodeCount < this->neighborCount; lockedNodeCount++) {
 					if (pthread_mutex_trylock(&this->neighbors[lockedNodeCount]->broadcastLock)) {
-						printf("Node %d failed to acquire lock on node %d, unlocking %i nodes\n", this->nodeID,
-							   this->neighbors[lockedNodeCount]->nodeID, lockedNodeCount);
+						printf("Node %d failed to acquire lock on node %d, unlocking nodes\n", this->nodeID, this->neighbors[lockedNodeCount]->nodeID);
 						failure = 1;
 						break;
 					}
 					else
 						printf("Node %d is LOCKED by node %d\n", this->neighbors[lockedNodeCount]->nodeID, this->nodeID);
 				}
+
 				//If broadcast lock could not be acquired, roll back changes
 				if (failure) {
 					for (lockedNodeCount = lockedNodeCount - 1; lockedNodeCount >= 0; lockedNodeCount--) {
-						printf("Node %d rolling back changes to node %d...\n", this->nodeID,
-							   this->neighbors[lockedNodeCount]->nodeID);
+						printf("Node %d is UNLOCKED by node %d after failure to acquire lock\n", this->neighbors[lockedNodeCount]->nodeID, this->nodeID);
 						pthread_mutex_unlock(&this->neighbors[lockedNodeCount]->broadcastLock);
 					}
+					pthread_mutex_unlock(&this->broadcastLock);
 					continue; //from top of node loop
 				}
 			}
@@ -98,15 +97,12 @@ void* normalNodeMain(void* val){
 			//Now that we've locked ourself and all nearby nodes, actually broadcast things! In this case, just go
 			//through the whole message queue and broadcast messages that need broadcasting.
 			while (getMessage(this->msgQueueHead, 0)){
-				message* msg = getMessage(this->msgQueueHead, 0);
-				printf("Node %d broadcasting message %d\n", this->nodeID, msg->msgID);
+				unsigned int msg = getMessage(this->msgQueueHead, 0);
+				printf("Node %d broadcasting message %d\n", this->nodeID, msg);
 				for (int j = 0; j < this->neighborCount; j++)
 					this->neighbors[j]->recieve(this->neighbors[j], msg);
 
-				while (pthread_mutex_trylock(&this->msgQueueLock)) {
-					printf("Node %d couldn't acquire its own msgQueueLock!\n", this->nodeID);
-					usleep(TALK_WINDOW_TIME);
-				}
+				pthread_mutex_lock(&this->msgQueueLock);
 				delMessage(this->msgQueueHead, 0);
 				addMessage(this->processedHead, msg);
 				pthread_mutex_unlock(&this->msgQueueLock);
@@ -121,7 +117,7 @@ void* normalNodeMain(void* val){
 		}
 		pthread_mutex_unlock(&this->msgQueueLock);
 
-		printf("Node %d going to sleep for %f ms\n", this->nodeID, TALK_WINDOW_TIME / 1000.f);
+		//printf("Node %d going to sleep for %f ms\n", this->nodeID, TALK_WINDOW_TIME / 1000.f);
 	}
 }
 

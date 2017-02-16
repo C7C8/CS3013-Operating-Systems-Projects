@@ -13,9 +13,9 @@ struct message {
 unsigned int msgCount;
 pthread_mutex_t msgCountMutex;
 
-int addMessage(message* head, message* msg);
-message* getMessage(message* head, unsigned int msgID);
-int delMessage(message* head, unsigned int msgID);
+unsigned int addMessage(message* head, unsigned int msg);
+unsigned int getMessage(message* head, unsigned int msgID);
+unsigned int delMessage(message* head, unsigned int msgID);
 	
 typedef enum {NODE_NORMAL, NODE_NOISY} node_type;
 typedef struct node node;
@@ -35,7 +35,7 @@ struct node {
 	pthread_mutex_t broadcastLock;
 
 	//Message related functions
-	void (*recieve)(node*, message*);
+	void (*recieve)(node*, unsigned int);
 	void* (*nodeMain)(void*);
 
 	//Node log

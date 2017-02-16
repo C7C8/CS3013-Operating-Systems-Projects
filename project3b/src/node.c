@@ -5,10 +5,10 @@ unsigned int nodeCount = 0; //Terrible hack for getting reliable node IDs. It wo
 unsigned int msgCount = 1;
 
 //Adds a message to the given linked list head. Returns true if add was successful, false if add failed
-int addMessage(message* head, message* msg){
+unsigned int addMessage(message* head, unsigned int msg){
 	//The message must be dynamically allocated and copied.
 	message* mMsg = (message*)malloc(sizeof(message));
-	*mMsg = *msg;
+	mMsg->msgID = msg;
 
 	if (head->next == head)
 		printf("Bit of a fuckup here\n");
@@ -20,27 +20,30 @@ int addMessage(message* head, message* msg){
 
 //Returns message of given ID using the given linked list head. If 0 is passed in for an ID, the first message will be returned.
 //Returns null on failure.
-message* getMessage(message* head, unsigned int msgID) {
+unsigned int getMessage(message* head, unsigned int msgID) {
 	if(!head){
 		printf("getMessage got a nullptr on head!\n");
-		return NULL;
+		return 0;
 	}
 
+	if (!head->next)
+		return 0;
+
 	if (msgID == 0)
-		return head->next;
+		return head->next->msgID;
 
 	head = head->next;
 	while (head) {
 		if (head->msgID == msgID)
-			return head;
+			return head->msgID;
 		head = head->next;
 	}
-	return NULL;
+	return 0;
 }
 
 //Deletes a message with the given ID and returns 1 in the even of success. If the message did not exist or some error occurs, 1
 //is returned. If 0 is provided as msgID, then the first element in the list is deleted.
-int delMessage(message* head, unsigned int msgID){
+unsigned int delMessage(message* head, unsigned int msgID){
 	if (!head || !head->next)
 		return 0;
 
@@ -64,7 +67,5 @@ int delMessage(message* head, unsigned int msgID){
 		}
 		head = head->next;
 	}
-
-	printf("mini fuckup here\n");
 	return 0;
 }
