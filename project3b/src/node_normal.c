@@ -44,7 +44,7 @@ void* normalNodeMain(void* val){
 	node* this = (node*) val;
 	while (1){
 		usleep(TALK_WINDOW_TIME); //5 msTime delay so the node isn't constantly trying to send messages
-		//printf("Node %d has woken up!\n", this->nodeID);
+		printf("Node %d has woken up!\n", this->nodeID);
 
 		//Are we going to send a message?
 		if ((rand() % 101 <= TALK_PROBABILITY)){
@@ -63,6 +63,7 @@ void* normalNodeMain(void* val){
 
 
 		if (getMessage(this->msgQueueHead, 0)){
+			printf("Node %d wants to transmit messages in its queue\n", this->nodeID);
 
 			//Try to broadcast to the nearby nodes. First, though, we need to acquire relevant broadcast locks
 			if (pthread_mutex_trylock(&this->broadcastLock)) {
@@ -117,7 +118,7 @@ void* normalNodeMain(void* val){
 		}
 		pthread_mutex_unlock(&this->msgQueueLock);
 
-		//printf("Node %d going to sleep for %f ms\n", this->nodeID, TALK_WINDOW_TIME / 1000.f);
+		printf("Node %d going to sleep for %f ms\n", this->nodeID, TALK_WINDOW_TIME / 1000.f);
 	}
 }
 
