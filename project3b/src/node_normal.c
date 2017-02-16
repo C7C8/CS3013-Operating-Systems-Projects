@@ -17,18 +17,18 @@ void initNormalNode(node* this, int newPosX, int newPosY){
 	pthread_mutex_init(&this->broadcastLock, NULL);
 	this->type = NODE_NORMAL;
 	this->channel = 0;
+	gettimeofday(&this->lastDwell, NULL);
 
 	//Function stuff
 	this->recieve = &normalRecieve;
 	this->nodeMain = &normalNodeMain;
 
 	//Node log stuff
-	char fname[6];
-	snprintf(fname, 6, "%d.log", this->nodeID);
+	char fname[7];
+	snprintf(fname, 7, "%d.log", this->nodeID);
 	this->log = fopen(fname, "a");
 	fprintf(this->log, "====NODE %d LOG BEGIN====\n", this->nodeID);
 }
-
 
 void normalRecieve(node* this, unsigned int msg, unsigned int channel) {
 	if (this->channel != channel){
@@ -53,9 +53,16 @@ void* normalNodeMain(void* val){
 		printf("Node %d has woken up!\n", this->nodeID);
 
 		//Are we going to change channels?
-		if (rand() % 101 > DWELL_PROBABILITY) {
-			this->channel = rand() % 3;
-			printf("Node %d switching to channel %d\n", this->nodeID, this->channel);
+		struct timeval ctime, delta;
+		gettimeofday(&ctime, NULL);
+		timersub(&ctime, &this->lastDwell, &delta);
+		if (delta.tv_usec > DWELL_DURATION){
+			printf("Node %d considering whether to change channels\n", this->nodeID);
+			gettimeofday(&this->lastDwell, NULL);
+			if (rand() % 101 > DWELL_PROBABILITY) {
+				this->channel = rand() % 3;
+				printf("Node %d switching to channel %d\n", this->nodeID, this->channel);
+			}
 		}
 
 		//Are we going to send a message?

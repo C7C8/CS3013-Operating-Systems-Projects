@@ -2,6 +2,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/time.h>
 #include "params.h"
 
 typedef struct message message;
@@ -30,6 +31,7 @@ struct node {
 	int neighborCount;
 	node* neighbors[NUM_NODES];
 	unsigned int channel;
+	struct timeval lastDwell;
 
 	//Synchronization stuff
 	pthread_mutex_t msgQueueLock;
