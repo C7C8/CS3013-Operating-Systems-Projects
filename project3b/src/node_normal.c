@@ -48,6 +48,7 @@ void normalRecieve(node* this, unsigned int msg, unsigned int channel) {
 
 void* normalNodeMain(void* val){
 	pthread_cond_wait(&startVar, &startMutex);
+	pthread_mutex_unlock(&startMutex);
 
 	node* this = (node*) val;
 	while (1){

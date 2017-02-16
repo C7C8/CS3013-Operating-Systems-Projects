@@ -31,11 +31,12 @@ void initNoisyNode(node* this, int newPosX, int newPosY){
 }
 
 void noisyRecieve(node* this, unsigned int msg, unsigned int channel) {
-	printf("Noisy node u %d received a message... I guess the other guy didn't realize that I'm a microwave.\n", this->nodeID);
+	printf("Noisy node %d received a message... I guess the other guy didn't realize that I'm a microwave.\n", this->nodeID);
 }
 
 void* noisyNodeMain(void* val){
 	pthread_cond_wait(&startVar, &startMutex);
+	pthread_mutex_unlock(&startMutex);
 
 	node* this = (node*) val;
 	while (1){
