@@ -9,9 +9,6 @@ unsigned int addMessage(message* head, unsigned int msg){
 	//The message must be dynamically allocated and copied.
 	message* mMsg = (message*)malloc(sizeof(message));
 	mMsg->msgID = msg;
-
-	if (head->next == head)
-		printf("Bit of a fuckup here\n");
 	mMsg->next = head->next;
 	head->next = mMsg;
 
@@ -21,12 +18,7 @@ unsigned int addMessage(message* head, unsigned int msg){
 //Returns message of given ID using the given linked list head. If 0 is passed in for an ID, the first message will be returned.
 //Returns null on failure.
 unsigned int getMessage(message* head, unsigned int msgID) {
-	if(!head){
-		printf("getMessage got a nullptr on head!\n");
-		return 0;
-	}
-
-	if (!head->next)
+	if(!head || !head->next)
 		return 0;
 
 	if (msgID == 0)
@@ -57,9 +49,6 @@ unsigned int delMessage(message* head, unsigned int msgID){
 	//Loop through and find the appropriate msg ID
 	while (head->next){
 		if (head->next->msgID == msgID) {
-			printf("Successfully deleted msg %d\n", msgID);
-			if (head->next == head->next->next)
-				printf("maxi fuckup here\n");
 			message* temp = head->next;
 			head->next = head->next->next;
 			free(temp);
