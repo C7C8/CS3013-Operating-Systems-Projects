@@ -1,0 +1,33 @@
+Briefly, the system I designed relies on two locks per node: a broadcast lock,
+and a queue lock (which is really just a redundancy). When a node wants to
+broadcast, it first tries to acquire its own broadcast lock; if it cannot do
+so, it goes back to sleep. If it CAN acquire its own lock, it tries to acquire
+all of the locks for neighbors on the same channel. If any one neighbor fails,
+the node will roll back the locks it made and go back to sleep. Only after it
+has acquired its own broadcast lock and relevant neighbor locks will it broadcast;
+it broadcasts the entire contents of its message queue to its neighbors.
+Surprisingly, this approach requires nothing beyond the usage of simple mutexes
+to be effective; the switch from mutexes from semaphores was very easy as all
+mutexes were simply replaced with semaphores initialized to 1.
+
+
+====
+
+Deadlock risks - deadlock is addressed by ensuring that nodes don't grab
+neighbors in the same order as other nodes (see main() for details on that). It's
+approximately the same solution used in the dining philosophers problem, I
+believe. 
+
+Noisemaker considerations - noisemakers are implemented by creating nodes that
+randomly lock their own broadcast node, preventing affected nodes (nodes within
+the 10x10 square near the node) from delivering any messages using the same
+channel that the noisemaker is on.
+
+Confirmation that the system works correctly - nodes store a very detailed log
+for every transaction that they make; any time a message is received, it tries to
+acquire a broadcast lock, etc., it's all logged in. It's easy to check that nodes
+are able to broadcast, the appropriate "Node x is broadcasting message:x"-type
+messages will appear, alongside a list of nodes it had to lock in order to
+accomplish that. Synchronization issues are likely to rise up whenever there are
+a LOT of nodes trying to broadcast at once - this should only decrease the level
+of concurrency, and should not result in deadlock.

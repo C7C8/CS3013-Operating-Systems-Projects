@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.0)
+project(Project3b)
+find_package(Threads)
+file(GLOB_RECURSE sources src/*.c src/*.h)
+add_executable(Skynet ${sources})
+target_link_libraries(Skynet ${CMAKE_THREAD_LIBS_INIT})
