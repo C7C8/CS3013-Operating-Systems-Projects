@@ -22,12 +22,12 @@ int main() {
 	 * |  Open? |   Owner PID	|Present| Write	|  		   VPN			|
 	 */
 
-	unsigned char memory[MEMSIZE];
+	unsigned char memory[MEMSIZE] = { 0 };
 	FILE* swapfile = fopen("swap.bin", "wb+");
 	unsigned char* swap = (unsigned char*)malloc(SWAPSIZE+1);
 	for (int i = 0; i < SWAPSIZE; i++)
 		swap[i] = 0;
-	fread(swap, 1, SWAPSIZE, swapfile);
+	//fread(swap, 1, SWAPSIZE, swapfile);
 
 	//Initialize the page table
 	for (int i = 0; i < 4; i++)
@@ -61,8 +61,8 @@ int main() {
 				printf("Current memory: %s\n", bytestr(memory[i]));
 				if (memory[i] & B_OPEN){
 					printf("Allocating page %d to PID %s\n", i, bytestr(pid));
+					memory[i] |= getNumPages(memory, pid);
 					memory[i] |= pid << 5;
-					memory[i] |= getNumPages(memory, pid) + (unsigned char)1;
 					memory[i] |= B_PRESENT;
 					memory[i] &= ~B_OPEN;
 					if (val == 1)
@@ -77,8 +77,8 @@ int main() {
 				printf("Failed to allocate a page in memory, swapping out another page to make room!\n");
 				const int evicted = evictPage(memory, swap, swapfile);
 				printf("Allocating page %d to PID %s\n", evicted , bytestr(pid));
+				memory[evicted] |= getNumPages(memory, pid);
 				memory[evicted] |= pid << 5;
-				memory[evicted] |= getNumPages(memory, pid) + 1;
 				memory[evicted] &= ~B_OPEN;
 				if (val == 1)
 					memory[evicted] |= B_WRTE;
@@ -194,6 +194,7 @@ int writeToSwap(unsigned char* memory, unsigned char pfn, unsigned char* swap, F
 			//And now just flush fake-swap to real swap
 			printf("fseek return: %d\n", (int)fseek(swapfile, 0, SEEK_SET));
 			printf("Fwrite return: %d\n", fwrite(swap, 1, SWAPSIZE, swapfile));
+			fflush(swapfile);
 			return 1;
 		}
 	}
@@ -213,14 +214,15 @@ unsigned char evictPage(unsigned char* memory, unsigned char* swap, FILE* swapfi
 }
 
 unsigned char getNumPages(unsigned char* memory, int pid){
-	unsigned char max = 0;
+	unsigned char count = 0;
 	for (int i = 1; i < 16; i++){
-		int curVPN = MID(memory[i], 0, 3);
-		if (MID(memory[i], 5, 7) == pid && curVPN > max)
-			max = curVPN;
+		if (MID(memory[i], 5, 7) == pid) {
+			printf("Found page table entry for PID:%d at pfn %d\n", pid, i);
+			count++;
+		}
 	}
-	printf("PID %d has %d pages\n", pid, max);
-	return max;
+	printf("PID %d has %d pages\n", pid, count);
+	return count;
 }
 
 char* bytestr(unsigned char byte) {
