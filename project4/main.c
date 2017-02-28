@@ -71,7 +71,7 @@ int main() {
 			}
 
 			if (!success){
-				printf("Failed to allocate a page in memory, swapping out another page to make room!");
+				printf("Failed to allocate a page in memory, swapping out another page to make room!\n");
 				const int evicted = evictPage(memory, swap, swapfile);
 				printf("Allocating page %d to PID %s\n", evicted , bytestr(pid));
 				memory[evicted] |= pid << 5;
@@ -189,7 +189,7 @@ int writeToSwap(unsigned char* memory, unsigned char pfn, unsigned char* swap, F
 			//Finally, copy out the actual page data to its new home in the swap
 			memcpy(&swap[(i*16) - MEMSIZE], &memory[pfn * 16], 16);
 			//And now just flush fake-swap to real swap
-			printf("lseek return: %d\n", (int)lseek(swapfile, 0, SEEK_SET));
+			printf("fseek return: %d\n", (int)fseek(swapfile, 0, SEEK_SET));
 			fwrite(swap, 1, SWAPSIZE, swapfile);
 			return 1;
 		}
@@ -202,7 +202,7 @@ unsigned char evictPage(unsigned char* memory, unsigned char* swap, FILE* swapfi
 	//Round-robin evict a page
 	static unsigned char lastEvicted = 2;
 	lastEvicted = ((lastEvicted + 1) % 3) + 1; //possible values: 1, 2, 3
-	printf("Round-robin evicting page %d\n!", lastEvicted);
+	printf("Round-robin evicting page %d!\n", lastEvicted);
 	if (!writeToSwap(memory, lastEvicted, swap, swapfile))
 		return 0;
 	memory[lastEvicted] = B_OPEN;
