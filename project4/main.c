@@ -10,6 +10,8 @@ unsigned char evictPage(unsigned char* memory, unsigned char* swap, FILE* swapfi
 unsigned char getNotPresent(unsigned char* memory, unsigned char* swap, FILE* swapfile, int vpn, int pid);
 unsigned char getNumPages(unsigned char* memory, int pid);
 
+int writable = 0; //let's just call this a "status register", shall we?
+
 int main() {
 	/* For this version, all addresses should be 6 bits at most, and all offsets should be 4 bits. The page table shall
 	 * be the first 4 bytes of the first page, which itself is marked as out of bounds. A page table entry shall follow
@@ -89,7 +91,10 @@ int main() {
 			if (newAddr == 0)
 				continue;
 			printf("Translated address %d to address %d\n", adr, newAddr);
-			memory[newAddr] = val;
+			if (!writable)
+				printf("Can't write to that address, the page is marked as read only!\n");
+			else
+				memory[newAddr] = val;
 		}
 		if (ist == LDM) {
 			printf("Instruction: LOAD\n");
@@ -140,6 +145,7 @@ unsigned char translateAddress(char* memory, unsigned char pid, unsigned char ad
 		printf("Failed to translate vpn to pfn!\n");
 		return 0;
 	}
+	writable = pfn & B_WRTE;
 	unsigned char trnsAddr = MID(addr, 0, 4);
 	printf("Masking out vpn and replacing with pfn: %s -> %s\n", bytestr(addr), bytestr(trnsAddr));
 	printf("Applying translation: %s ->", bytestr(trnsAddr));
