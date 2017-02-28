@@ -24,7 +24,9 @@ int main() {
 
 	unsigned char memory[MEMSIZE];
 	FILE* swapfile = fopen("swap.bin", "wb+");
-	unsigned char* swap = (char*)malloc(SWAPSIZE+1);
+	unsigned char* swap = (unsigned char*)malloc(SWAPSIZE+1);
+	for (int i = 0; i < SWAPSIZE; i++)
+		swap[i] = 0;
 	fread(swap, 1, SWAPSIZE, swapfile);
 
 	//Initialize the page table
@@ -60,7 +62,8 @@ int main() {
 				if (memory[i] & B_OPEN){
 					printf("Allocating page %d to PID %s\n", i, bytestr(pid));
 					memory[i] |= pid << 5;
-					memory[i] |= getNumPages(memory, pid) + 1;
+					memory[i] |= getNumPages(memory, pid) + (unsigned char)1;
+					memory[i] |= B_PRESENT;
 					memory[i] &= ~B_OPEN;
 					if (val == 1)
 						memory[i] |= B_WRTE;
@@ -177,20 +180,20 @@ int writeToSwap(unsigned char* memory, unsigned char pfn, unsigned char* swap, F
 		return 0;
 	}
 
+	printf("Trying to write pfn %d to swap\n", pfn);
 	for (int i = 4; i < 16; i++) {
 		//Look for the first open slot in swap space
 		if (memory[i] & B_OPEN) {
 			//Write to swap!
 			memory[i] = memory[pfn];
-			memory[i] &= B_PRESENT;
-			memory[pfn] = B_OPEN;
 			memory[i] &= ~B_PRESENT;
-			printf("New page table entry for page %d: %s\n", i, bytestr(memory[i]));
+			memory[pfn] = B_OPEN; //Clear out our original pfn
+			printf("New page table entry for pfn %d: %s\n", i, bytestr(memory[i]));
 			//Finally, copy out the actual page data to its new home in the swap
 			memcpy(&swap[(i*16) - MEMSIZE], &memory[pfn * 16], 16);
 			//And now just flush fake-swap to real swap
 			printf("fseek return: %d\n", (int)fseek(swapfile, 0, SEEK_SET));
-			fwrite(swap, 1, SWAPSIZE, swapfile);
+			printf("Fwrite return: %d\n", fwrite(swap, 1, SWAPSIZE, swapfile));
 			return 1;
 		}
 	}
@@ -210,12 +213,13 @@ unsigned char evictPage(unsigned char* memory, unsigned char* swap, FILE* swapfi
 }
 
 unsigned char getNumPages(unsigned char* memory, int pid){
-	int max = -1;
+	unsigned char max = 0;
 	for (int i = 1; i < 16; i++){
 		int curVPN = MID(memory[i], 0, 3);
 		if (MID(memory[i], 5, 7) == pid && curVPN > max)
 			max = curVPN;
 	}
+	printf("PID %d has %d pages\n", pid, max);
 	return max;
 }
 
