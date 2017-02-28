@@ -67,7 +67,8 @@ int main() {
 				if (memory[i] & B_OPEN){
 					printf("Allocating page %d to PID %s\n", i, bytestr(pid));
 					memory[i] |= getNumPages(memory, pid);
-					memory[i] |= pid << 5 | B_PRESENT;
+					memory[i] |= pid << 5;
+					memory[i] |= B_PRESENT;
 					memory[i] &= ~B_OPEN;
 					if (val == 1)
 						memory[i] |= B_WRTE;
@@ -82,7 +83,8 @@ int main() {
 				const int evicted = evictPage(memory, swap, swapfile);
 				printf("Allocating page %d to PID %s\n", evicted , bytestr(pid));
 				memory[evicted] |= getNumPages(memory, pid);
-				memory[evicted] |= pid << 5 | B_PRESENT;
+				memory[evicted] |= pid << 5;
+				memory[evicted] |= B_PRESENT;
 				memory[evicted] &= ~B_OPEN;
 				if (val == 1)
 					memory[evicted] |= B_WRTE;
@@ -149,7 +151,7 @@ unsigned char translateAddress(char* memory, unsigned char pid, unsigned char ad
 		printf("Failed to translate vpn to pfn!\n");
 		return 0;
 	}
-	writable = pfn & B_WRTE;
+	writable = memory[pfn] & B_WRTE;
 	unsigned char trnsAddr = MID(addr, 0, 4);
 	printf("Masking out vpn and replacing with pfn: %s -> %s\n", bytestr(addr), bytestr(trnsAddr));
 	printf("Applying translation: %s ->", bytestr(trnsAddr));

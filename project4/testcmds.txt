@@ -1,0 +1,25 @@
+# Comments are allowed in these test files as long as the first character of a line is '#'
+# Commands are ordered in the form of PID, Instruction, Address, Value
+# PID can be anything non-zero, the address can be up to 255, value can be up to 255
+# Here's a table of commands:
+#
+# 1 - MAP - gives gives PID a new page that is writable if Value is 1. Ignores address
+# 2 - STR - stores Value in Address in PID's address space.
+# 3 - LDM - load PID's memory at Address. Ignores value
+# 4 - DMP - dump the contents of the page table in binary form to STDOUT. Used for debugging
+#
+# First, let's give PID 1 two pages (1 writable) and a third writable one to PID 2
+1,1,0,1
+1,1,0,0
+2,1,0,1
+# Try to write to page 1 of PID 1, then read from it
+1,2,13,42
+1,3,13,0
+# That should've worked. Now try writing to PID 1's second page, but get its original content first
+1,3,17,0
+1,2,17,47
+# That above command should've failed
+1,3,17,0
+# This one should have returned 0, just like the original load
+#
+#
