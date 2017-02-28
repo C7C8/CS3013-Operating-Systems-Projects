@@ -45,6 +45,10 @@ int main() {
 			printf("EOF reached, exiting!\n");
 			break;
 		}
+		if (input[0] == '#') {
+			continue; //Comments!
+			free(input);
+		}
 
 		//Parse the string into four values: pid, instruction, addr, val. All of these should be numbers
 		input[strlen(input) - 1] = '\0'; //chop off the newline
