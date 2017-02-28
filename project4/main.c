@@ -4,11 +4,12 @@
 #include <zconf.h>
 #include "params.h"
 
-char getNumFromBits(unsigned char num, unsigned char offset, unsigned char bitcount);
 char* bytestr(unsigned char byte);
 unsigned char translateAddress(char* memory, unsigned char pid, unsigned char addr, FILE* swapfile, char* swap);
-void writeToSwap(unsigned char* memory, unsigned char pfn, unsigned char* swap, FILE* swapfile);
+int writeToSwap(unsigned char* memory, unsigned char pfn, unsigned char* swap, FILE* swapfile);
+unsigned char evictPage(unsigned char* memory, unsigned char* swap, FILE* swapfile);
 unsigned char getNotPresent(unsigned char* memory, unsigned char* swap, FILE* swapfile, int vpn, int pid);
+unsigned char getNumPages(unsigned char* memory, int pid);
 
 int main() {
 	/* For this version, all addresses should be 6 bits at most, and all offsets should be 4 bits. The page table shall
@@ -21,9 +22,9 @@ int main() {
 	 * |  Open? |   Owner PID	|Present| Write	|  		   VPN			|
 	 */
 
-	char memory[MEMSIZE];
+	unsigned char memory[MEMSIZE];
 	FILE* swapfile = fopen("swap.bin", "wb+");
-	char* swap = (char*)malloc(SWAPSIZE+1);
+	unsigned char* swap = (char*)malloc(SWAPSIZE+1);
 	fread(swap, 1, SWAPSIZE, swapfile);
 
 	//Initialize the page table
@@ -68,8 +69,17 @@ int main() {
 				}
 			}
 
-			if (!success)
-				printf("Couldn't map new page!\n");
+			if (!success){
+				printf("Failed to allocate a page in memory, swapping out another page to make room!");
+				const int evicted = evictPage(memory, swap, swapfile);
+				printf("Allocating page %d to PID %s\n", evicted , bytestr(pid));
+				memory[evicted] |= pid << 5;
+				memory[evicted] |= getNumPages(memory, pid) + 1;
+				memory[evicted] &= ~B_OPEN;
+				if (val == 1)
+					memory[evicted] |= B_WRTE;
+				printf("New memory: %s\n", bytestr(memory[evicted]));
+			}
 		}
 		if (ist == STR) {
 			printf("Instruction: STORE\n");
@@ -149,10 +159,7 @@ unsigned char getNotPresent(unsigned char* memory, unsigned char* swap, FILE* sw
 	success = 0;
 
 	//Round-robin evict a page
-	static unsigned char lastEvicted = 2;
-	lastEvicted = ((lastEvicted + 1) % 3) + 1; //possible values: 1, 2, 3
-	printf("Round-robin evicting page %d\n!", lastEvicted);
-	writeToSwap(memory, lastEvicted, swap, swapfile);
+	unsigned char lastEvicted = evictPage(memory, swap, swapfile);
 
 	//Move the page we want into the newly freed slot
 	memory[lastEvicted] = memory[swapFN];
@@ -162,11 +169,11 @@ unsigned char getNotPresent(unsigned char* memory, unsigned char* swap, FILE* sw
 	return lastEvicted;
 }
 
-void writeToSwap(unsigned char* memory, unsigned char pfn, unsigned char* swap, FILE* swapfile) {
+int writeToSwap(unsigned char* memory, unsigned char pfn, unsigned char* swap, FILE* swapfile) {
 	//Takes memory and a given physical page (numbered 1-3) writes the given page to the swap file
 	if (pfn > 3) {
 		printf("Can't swap out memory %d that's already in swap !\n", pfn);
-		return;
+		return 0;
 	}
 
 	for (int i = 4; i < 16; i++) {
@@ -183,8 +190,32 @@ void writeToSwap(unsigned char* memory, unsigned char pfn, unsigned char* swap, 
 			//And now just flush fake-swap to real swap
 			printf("lseek return: %d\n", (int)lseek(swapfile, 0, SEEK_SET));
 			fwrite(swap, 1, SWAPSIZE, swapfile);
+			return 1;
 		}
 	}
+	printf("No room left in swap space!");
+	return 0;
+}
+
+unsigned char evictPage(unsigned char* memory, unsigned char* swap, FILE* swapfile){
+	//Round-robin evict a page
+	static unsigned char lastEvicted = 2;
+	lastEvicted = ((lastEvicted + 1) % 3) + 1; //possible values: 1, 2, 3
+	printf("Round-robin evicting page %d\n!", lastEvicted);
+	if (!writeToSwap(memory, lastEvicted, swap, swapfile))
+		return 0;
+	memory[lastEvicted] = B_OPEN;
+	return lastEvicted;
+}
+
+unsigned char getNumPages(unsigned char* memory, int pid){
+	int max = -1;
+	for (int i = 1; i < 16; i++){
+		int curVPN = MID(memory[i], 0, 3);
+		if (MID(memory[i], 5, 7) == pid && curVPN > max)
+			max = curVPN;
+	}
+	return max;
 }
 
 char* bytestr(unsigned char byte) {
