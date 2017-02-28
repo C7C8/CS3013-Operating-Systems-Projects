@@ -6,9 +6,9 @@
 
 char getNumFromBits(unsigned char num, unsigned char offset, unsigned char bitcount);
 char* bytestr(unsigned char byte);
-unsigned char translateAddress(char* memory, unsigned char pid, unsigned char addr);
+unsigned char translateAddress(char* memory, unsigned char pid, unsigned char addr, FILE* swapfile, char* swap);
 void writeToSwap(unsigned char* memory, unsigned char pfn, unsigned char* swap, FILE* swapfile);
-int getNotPresent(unsigned char* memory, unsigned char* swap, FILE* swapfile, int vpn, int pid);
+unsigned char getNotPresent(unsigned char* memory, unsigned char* swap, FILE* swapfile, int vpn, int pid);
 
 int main() {
 	/* For this version, all addresses should be 6 bits at most, and all offsets should be 4 bits. The page table shall
@@ -73,7 +73,7 @@ int main() {
 		}
 		if (ist == STR) {
 			printf("Instruction: STORE\n");
-			unsigned char newAddr = translateAddress(memory, pid, adr);
+			unsigned char newAddr = translateAddress(memory, pid, adr, swapfile, swap);
 			if (newAddr == 0)
 				continue;
 			printf("Translated address %d to address %d\n", adr, newAddr);
@@ -81,7 +81,7 @@ int main() {
 		}
 		if (ist == LDM) {
 			printf("Instruction: LOAD\n");
-			unsigned char newAddr = translateAddress(memory, pid, adr);
+			unsigned char newAddr = translateAddress(memory, pid, adr, swapfile, swap);
 			if (newAddr == 0)
 				continue;
 			printf("Translated address %d to address %d\n", adr, newAddr);
@@ -94,22 +94,24 @@ int main() {
 }
 
 
-unsigned char translateAddress(char* memory, unsigned char pid, unsigned char addr) {
+unsigned char translateAddress(char* memory, unsigned char pid, unsigned char addr, FILE* swapfile, char* swap) {
 	printf("Virtual address: %s\n", bytestr(addr));
 	const unsigned char vpn = MID(addr, 4, 7);
 	printf("Translating VPN %d\n", vpn);
 
 	unsigned char pfn = 0;
-	int count = -1;
-	for (int i = 0; i < PAGECOUNT; i++) {
-		printf("Reading page entry %s\n", bytestr(memory[i]));
-		printf("Extracted pid %d from table\n", MID(memory[i], 5, 7));
-		if (MID(memory[i], 5, 7) == pid) {
-			count++;
-			if (count == vpn) {
+	//Find the location of our memory in memory
+	for (int i = 0; i < 16; i++)
+	{
+		printf("Current memory: %s\n", bytestr(memory[i]));
+		printf("Reading%s present page table entry containing VPN:%d and PID:%d\n", memory[i] & B_PRESENT ? "" : " not", MID(memory[i], 0, 3), MID(memory[i], 5, 7));
+		//If the VPN and the PID match...
+		if (MID(memory[i], 0, 3) == vpn && MID(memory[i], 5, 7) == pid)
+		{
+			if (memory[i] & B_PRESENT)
 				pfn = i;
-				break;
-			}
+			else
+				pfn = getNotPresent(memory, swap, swapfile, vpn, pid);
 		}
 	}
 
@@ -127,7 +129,7 @@ unsigned char translateAddress(char* memory, unsigned char pid, unsigned char ad
 	return trnsAddr;
 }
 
-int getNotPresent(unsigned char* memory, unsigned char* swap, FILE* swapfile, int vpn, int pid) {
+unsigned char getNotPresent(unsigned char* memory, unsigned char* swap, FILE* swapfile, int vpn, int pid) {
 	//Gets some memory that's in swap right now (indicated by a 0 on the present bit), returns its new PFN
 	//First identify where in swap the memory is
 	int success = 0;
