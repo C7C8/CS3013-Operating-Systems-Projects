@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <zconf.h>
 #include "params.h"
 
 char* bytestr(unsigned char byte);
@@ -35,7 +34,6 @@ int main() {
 
 	//Set the first page (containing the page table) as off-limits
 	memory[0] &= ~B_OPEN;
-	printf("Finished init\n");
 
 	//Now start reading from stdin... over and over and over again!
 	while (1){
@@ -52,9 +50,9 @@ int main() {
 		const unsigned char ist = (unsigned char)atoi(strtok(NULL, ","));
 		const unsigned char adr = (unsigned char)atoi(strtok(NULL, ","));
 		const unsigned char val = (unsigned char)atoi(strtok(NULL, ","));
-		printf("Got instruction %d\n", ist);
 
 		if (ist == MAP){
+			printf("Instruction: MAP\n");
 			printf("Trying to allocate a new page to process %d\n", pid);
 			//Try to allocate a page
 			int success = 0;
@@ -63,8 +61,7 @@ int main() {
 				if (memory[i] & B_OPEN){
 					printf("Allocating page %d to PID %s\n", i, bytestr(pid));
 					memory[i] |= getNumPages(memory, pid);
-					memory[i] |= pid << 5;
-					memory[i] |= B_PRESENT;
+					memory[i] |= pid << 5 | B_PRESENT;
 					memory[i] &= ~B_OPEN;
 					if (val == 1)
 						memory[i] |= B_WRTE;
@@ -79,7 +76,7 @@ int main() {
 				const int evicted = evictPage(memory, swap, swapfile);
 				printf("Allocating page %d to PID %s\n", evicted , bytestr(pid));
 				memory[evicted] |= getNumPages(memory, pid);
-				memory[evicted] |= pid << 5;
+				memory[evicted] |= pid << 5 | B_PRESENT;
 				memory[evicted] &= ~B_OPEN;
 				if (val == 1)
 					memory[evicted] |= B_WRTE;
@@ -103,7 +100,7 @@ int main() {
 			printf("Memory at %d: %d\n", newAddr, memory[newAddr]);
 		}
 		if (ist == DMP) {
-			printf("Instruction: DMP");
+			printf("Instruction: DMP\n");
 			printf("Dumping page table: \n");
 			for (int i = 0; i < 16; i++)
 				printf("%d.\t%s\n", i, bytestr(memory[i]));
@@ -139,7 +136,7 @@ unsigned char translateAddress(char* memory, unsigned char pid, unsigned char ad
 
 	if (pfn != 0)
 		printf("Translated vpn %d to pfn %d\n", vpn, pfn);
-	else {
+	else if (pfn <= 0){
 		printf("Failed to translate vpn to pfn!\n");
 		return 0;
 	}
@@ -175,6 +172,7 @@ unsigned char getNotPresent(unsigned char* memory, unsigned char* swap, FILE* sw
 
 	//Move the page we want into the newly freed slot
 	memory[lastEvicted] = memory[swapFN];
+	memory[swapFN] = B_OPEN; //clear original page table entry
 	memory[lastEvicted] |= B_PRESENT; //this page is now present
 	printf("Copying 16 bytes of memory from MEM:%d to SWP:%d\n", lastEvicted*16, (swapFN*16) - MEMSIZE);
 	memcpy(&memory[lastEvicted*16], &swap[(swapFN*16) - MEMSIZE], 16);
