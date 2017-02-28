@@ -15,6 +15,7 @@
 #define MAP			0x01	//Allocate a physical page to a given process. 1=rw, 0=r.
 #define STR			0x02	//Write supplied value into memory at given location.
 #define LDM			0x03	//Load supplied value from memory at given location.
+#define DMP			0x04	//Dump the page table
 
 //PARAMETERS
 #define MEMSIZE 	64							//bytes

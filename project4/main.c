@@ -27,10 +27,10 @@ int main() {
 	unsigned char* swap = (unsigned char*)malloc(SWAPSIZE+1);
 	for (int i = 0; i < SWAPSIZE; i++)
 		swap[i] = 0;
-	//fread(swap, 1, SWAPSIZE, swapfile);
+	fread(swap, 1, SWAPSIZE, swapfile);
 
 	//Initialize the page table
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 16; i++)
 		memory[i] = B_OPEN;
 
 	//Set the first page (containing the page table) as off-limits
@@ -52,6 +52,7 @@ int main() {
 		const unsigned char ist = (unsigned char)atoi(strtok(NULL, ","));
 		const unsigned char adr = (unsigned char)atoi(strtok(NULL, ","));
 		const unsigned char val = (unsigned char)atoi(strtok(NULL, ","));
+		printf("Got instruction %d\n", ist);
 
 		if (ist == MAP){
 			printf("Trying to allocate a new page to process %d\n", pid);
@@ -101,6 +102,12 @@ int main() {
 			printf("Translated address %d to address %d\n", adr, newAddr);
 			printf("Memory at %d: %d\n", newAddr, memory[newAddr]);
 		}
+		if (ist == DMP) {
+			printf("Instruction: DMP");
+			printf("Dumping page table: \n");
+			for (int i = 0; i < 16; i++)
+				printf("%d.\t%s\n", i, bytestr(memory[i]));
+		}
 	}
 
 	fclose(swapfile);
@@ -126,6 +133,7 @@ unsigned char translateAddress(char* memory, unsigned char pid, unsigned char ad
 				pfn = i;
 			else
 				pfn = getNotPresent(memory, swap, swapfile, vpn, pid);
+			break;
 		}
 	}
 
@@ -168,7 +176,7 @@ unsigned char getNotPresent(unsigned char* memory, unsigned char* swap, FILE* sw
 	//Move the page we want into the newly freed slot
 	memory[lastEvicted] = memory[swapFN];
 	memory[lastEvicted] |= B_PRESENT; //this page is now present
-	printf("Copying 16 bytes of memory from MEM:%d to SWP:%d", lastEvicted*16, (swapFN*16) - MEMSIZE);
+	printf("Copying 16 bytes of memory from MEM:%d to SWP:%d\n", lastEvicted*16, (swapFN*16) - MEMSIZE);
 	memcpy(&memory[lastEvicted*16], &swap[(swapFN*16) - MEMSIZE], 16);
 	return lastEvicted;
 }
@@ -194,11 +202,11 @@ int writeToSwap(unsigned char* memory, unsigned char pfn, unsigned char* swap, F
 			//And now just flush fake-swap to real swap
 			printf("fseek return: %d\n", (int)fseek(swapfile, 0, SEEK_SET));
 			printf("Fwrite return: %d\n", fwrite(swap, 1, SWAPSIZE, swapfile));
-			fflush(swapfile);
+			fflush(swapfile); //Needed because this program is usually force killed
 			return 1;
 		}
 	}
-	printf("No room left in swap space!");
+	printf("No room left in swap space!\n");
 	return 0;
 }
 
@@ -217,11 +225,11 @@ unsigned char getNumPages(unsigned char* memory, int pid){
 	unsigned char count = 0;
 	for (int i = 1; i < 16; i++){
 		if (MID(memory[i], 5, 7) == pid) {
-			printf("Found page table entry for PID:%d at pfn %d\n", pid, i);
+			printf("Found page table entry for PID:%d at pfn %d\n", pid, i-1);
 			count++;
 		}
 	}
-	printf("PID %d has %d pages\n", pid, count);
+	printf("PID %d has %d pages\n", pid, count+1);
 	return count;
 }
 
