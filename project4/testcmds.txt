@@ -21,5 +21,22 @@
 # That above command should've failed
 1,3,17,0
 # This one should have returned 0, just like the original load
+# Now make sure that PID 2 can still read and write memory
+2,3,13,0
+2,2,13,47
+2,3,13,0
 #
+# Let's do some paging. Give both PID 1 and PID 2 another page, then do R/W tests on them
 #
+1,1,0,1
+2,1,0,1
+# That should've evicted two different pages. Dump the page table to verify
+0,4,0,0
+# Let's store some stuff in them now. Remember, PID 2 has 2 (0-31 bytes) pages and PID 1 has 3 (0-47 bytes), so they now exceed the 64 byte memory space
+1,2,37,16
+2,2,17,15
+# Now get those contents back out
+1,3,37,0
+2,3,17,0
+# Remember that write to page 1 of PID 1? Let's make sure that value didn't vanish!
+1,3,13,0
