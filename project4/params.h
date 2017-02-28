@@ -2,13 +2,13 @@
 
 //MACROS
 #define BIT(x) (1 << x)
-#define LAST(k,n) ((k) & ((1<<(n))-1)) //"Inspired" by stack overflow after my own attempt at turning my masking function into a macro failed
-#define MID(k,m,n) LAST((k)>>(m),((n)-(m)))
+#define LAST(k,n) ((k) & ((1<<(n))-1)) //Modified slightly from a stackoverflow snippet after my own attempt at a bit masking macro failed
+#define MID(k,m,n) LAST((k)>>(m),((n)-(m))) //I really did have a function that did the same thing as this does, I just couldn't convert it to a macro for some reason.
 
 
 //FLAGS
 #define B_OPEN		BIT(7)
-#define B_READ		BIT(4)
+#define B_PRESENT	BIT(4)
 #define B_WRTE		BIT(3)
 
 //INSTRUCTIONS	Syntax: pid,instruction,addr,val
@@ -18,8 +18,9 @@
 
 //PARAMETERS
 #define MEMSIZE 	64							//bytes
+#define SWAPSIZE	192
 #define PAGECOUNT	4
-#define PAGESIZE	(MEMSIZE / PAGECOUNT)		//bytes
+#define SWAPCOUNT	12
 #define MAX_PIDC	4							//pids 0 to (MAX_PIDC-1)
 
 

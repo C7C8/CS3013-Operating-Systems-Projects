@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <zconf.h>
 #include "params.h"
 
 char getNumFromBits(unsigned char num, unsigned char offset, unsigned char bitcount);
 char* bytestr(unsigned char byte);
 unsigned char translateAddress(char* memory, unsigned char pid, unsigned char addr);
+void writeToSwap(unsigned char* memory, unsigned char pfn, unsigned char* swap, FILE* swapfile);
+int getNotPresent(unsigned char* memory, unsigned char* swap, FILE* swapfile, int vpn, int pid);
 
 int main() {
 	/* For this version, all addresses should be 6 bits at most, and all offsets should be 4 bits. The page table shall
@@ -15,14 +18,17 @@ int main() {
 	 * ------------------------------------------------------------------
 	 * |	7	|	6	|	5	|	4	|	3	|	2	|	1	|	0	|
 	 * ------------------------------------------------------------------
-	 * |  Open? |   Owner PID	| Read	| Write	|		Reserved		|
+	 * |  Open? |   Owner PID	|Present| Write	|  		   VPN			|
 	 */
 
 	char memory[MEMSIZE];
+	FILE* swapfile = fopen("swap.bin", "wb+");
+	char* swap = (char*)malloc(SWAPSIZE+1);
+	fread(swap, 1, SWAPSIZE, swapfile);
 
 	//Initialize the page table
 	for (int i = 0; i < 4; i++)
-		memory[i] = B_OPEN | B_READ;
+		memory[i] = B_OPEN;
 
 	//Set the first page (containing the page table) as off-limits
 	memory[0] &= ~B_OPEN;
@@ -48,7 +54,7 @@ int main() {
 			printf("Trying to allocate a new page to process %d\n", pid);
 			//Try to allocate a page
 			int success = 0;
-			for (int i = 0; i < 4; i++){
+			for (int i = 0; i < PAGECOUNT; i++){
 				printf("Current memory: %s\n", bytestr(memory[i]));
 				if (memory[i] & B_OPEN){
 					printf("Allocating page %d to PID %s\n", i, bytestr(pid));
@@ -83,6 +89,7 @@ int main() {
 		}
 	}
 
+	fclose(swapfile);
 	return 0;
 }
 
@@ -94,7 +101,7 @@ unsigned char translateAddress(char* memory, unsigned char pid, unsigned char ad
 
 	unsigned char pfn = 0;
 	int count = -1;
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < PAGECOUNT; i++) {
 		printf("Reading page entry %s\n", bytestr(memory[i]));
 		printf("Extracted pid %d from table\n", MID(memory[i], 5, 7));
 		if (MID(memory[i], 5, 7) == pid) {
@@ -120,7 +127,63 @@ unsigned char translateAddress(char* memory, unsigned char pid, unsigned char ad
 	return trnsAddr;
 }
 
+int getNotPresent(unsigned char* memory, unsigned char* swap, FILE* swapfile, int vpn, int pid) {
+	//Gets some memory that's in swap right now (indicated by a 0 on the present bit), returns its new PFN
+	//First identify where in swap the memory is
+	int success = 0;
+	int swapFN = 0;
+	for (int i = 4; i < 16; i++) {
+		if (MID(memory[i], 0, 3) == vpn && MID(memory[i], 5, 7) == pid) {
+			success = 1;
+			swapFN = i;
+			break;
+		}
+	}
 
+	if (!success) {
+		printf("Couldn't find vpn %d for pid %d!\n", vpn, pid);
+		return -1;
+	}
+	success = 0;
+
+	//Round-robin evict a page
+	static unsigned char lastEvicted = 2;
+	lastEvicted = ((lastEvicted + 1) % 3) + 1; //possible values: 1, 2, 3
+	printf("Round-robin evicting page %d\n!", lastEvicted);
+	writeToSwap(memory, lastEvicted, swap, swapfile);
+
+	//Move the page we want into the newly freed slot
+	memory[lastEvicted] = memory[swapFN];
+	memory[lastEvicted] |= B_PRESENT; //this page is now present
+	printf("Copying 16 bytes of memory from MEM:%d to SWP:%d", lastEvicted*16, (swapFN*16) - MEMSIZE);
+	memcpy(&memory[lastEvicted*16], &swap[(swapFN*16) - MEMSIZE], 16);
+	return lastEvicted;
+}
+
+void writeToSwap(unsigned char* memory, unsigned char pfn, unsigned char* swap, FILE* swapfile) {
+	//Takes memory and a given physical page (numbered 1-3) writes the given page to the swap file
+	if (pfn > 3) {
+		printf("Can't swap out memory %d that's already in swap !\n", pfn);
+		return;
+	}
+
+	for (int i = 4; i < 16; i++) {
+		//Look for the first open slot in swap space
+		if (memory[i] & B_OPEN) {
+			//Write to swap!
+			memory[i] = memory[pfn];
+			memory[i] &= B_PRESENT;
+			memory[pfn] = B_OPEN;
+			memory[i] &= ~B_PRESENT;
+			printf("New page table entry for page %d: %s\n", i, bytestr(memory[i]));
+			//Finally, copy out the actual page data to its new home in the swap
+			memcpy(&swap[(i*16) - MEMSIZE], &memory[pfn * 16], 16);
+			//And now just flush fake-swap to real swap
+			printf("lseek return: %d\n", (int)lseek(swapfile, 0, SEEK_SET));
+			fwrite(swap, 1, SWAPSIZE, swapfile);
+		}
+	}
+}
 
 char* bytestr(unsigned char byte) {
 	char *str = malloc(8); //hey look, a memory leak!
