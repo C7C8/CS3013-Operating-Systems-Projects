@@ -60,6 +60,7 @@ int main() {
 				if (memory[i] & B_OPEN){
 					printf("Allocating page %d to PID %s\n", i, bytestr(pid));
 					memory[i] |= pid << 5;
+					memory[i] |= getNumPages(memory, pid) + 1;
 					memory[i] &= ~B_OPEN;
 					if (val == 1)
 						memory[i] |= B_WRTE;
